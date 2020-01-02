@@ -63,6 +63,6 @@ $createStatements["users"] = 'CREATE TABLE `' . $tables["users"] . '` (
 //Query statemens
 foreach($createStatements as $key => $statement){
     if(!$conn->query($statement)){
-        die("Could not create table: " . $key . ". Please contact an administrator.");
+        die("Could not create table: " . $key . ". Please contact an administrator. <br/> Error: " . $conn->error);
     }
 }
