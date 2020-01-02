@@ -155,7 +155,7 @@ function removeConfigData(string $conf_name){
 	global $conn;
 	$table = $tables["config"];
 	if(confExists($conf_name)){
-		$q = "DELETE `".$table."` WHERE `conf_name` = '".$conf_name."'";
+		$q = "DELETE FROM `".$table."` WHERE `conf_name` = '". $conn->real_escape_string($conf_name) ."'";
 		if($conn->query($q)){
 			return true;
 		} else {
