@@ -66,3 +66,79 @@ foreach($createStatements as $key => $statement){
         die("Could not create table: " . $key . ". Please contact an administrator. <br/> Error: " . $conn->error);
     }
 }
+
+//functions for config DB
+/**
+ * Function Checks, if Config Exists in Database
+ * @param string $conf_name name of the config entry
+ * @return bool Config exists or not
+ */
+function confExists(string $conf_name){
+	global $tables;
+	global $conn;
+	$q = 'SELECT * FROM `' . $tables["config"] . '` WHERE `conf_name` = `'. $conf_name .'`';
+	$result = $conn->query($q);
+	if($result->num_rows == 1){
+		return true;
+	} else {
+		return false;
+	}
+}
+/**
+ * Gets Config-Data from the Database
+ * @param string $conf_name name of the config entry
+ * @return array Returns array with data, keys: "conf_name", "conf_val"
+ */
+function getConfData(string $conf_name){
+	global $tables;
+	global $conn;
+	$q = 'SELECT * FROM `' . $tables["config"] . '` WHERE `conf_name` = `'. $conf_name .'`';
+	$result = $conn->query($q);
+	if($result->num_rows == 1){
+		$data = $result->fetch_assoc();
+		return $data;
+	} else {
+		return null;
+	}
+}
+/**
+ * Gets all config-data from the Database
+ * @return array Returns array. Array contains arrays with config-data. keys: "conf_name", "conf_val"
+ */
+function getAllConfigData(){
+	global $tables;
+	global $conn;
+	$q = 'SELECT * FROM ` '. $tables["config"] .' `';
+	$result = $conn->query($q);
+	if($result->num_rows > 0){
+		$configs = array();
+		while($data = $result->fetch_assoc()){
+			array_push($configs, $data);
+		}
+		return $configs;
+	} else {
+		return null;
+	}
+}
+/**
+ * Sets config-value in the database
+ * @param string $conf_name name of the config-entry
+ * @param string $conf_data data that should be set
+ * @return array returns the data as array. Keys: "conf_name", "conf_val"
+ */
+function setConfigData(string $conf_name, string $conf_data){
+	global $tables;
+	global $conn;
+	if(confExists($conf_name)){
+		$q = 'UPDATE `'. $tables["config"] .'` SET `conf_val` = `'.$conf_data.'` WHERE `conf_name` = `'.$conf_data.'`';
+	} else {
+		$q = 'INSERT INTO `'.$tables["config"].'`(conf_name, conf_val) 
+		VALUES (`'.$conn->real_escape_string($conf_name).'`,
+		`'.$conn->real_escape_string($conf_data).'`)';
+	}
+	if($conn->query($q)){
+		return getConfData($conf_name);
+	} else {
+		die("Could not set config value. <br/> Error: " . $conn->error);
+	}
+}
