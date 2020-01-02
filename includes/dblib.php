@@ -19,12 +19,12 @@ $tables["users"] = $dbconfig["prefix"] . "users";
 
 //Create statements
 $createStatements = array();
-$createStatements["config"] = 'CREATE TABLE `' . $tables["config"] .'` (
+$createStatements["config"] = 'CREATE TABLE IF NOT EXISTS `' . $tables["config"] .'` (
 	`conf_name` VARCHAR(255) NOT NULL,
 	`conf_val` VARCHAR(255) NOT NULL,
     PRIMARY KEY (`conf_name`))';
 
-$createStatements["content"] = 'CREATE TABLE `'. $tables["content"] .'` (
+$createStatements["content"] = 'CREATE TABLE IF NOT EXISTS `'. $tables["content"] .'` (
 	`id` INT NOT NULL AUTO_INCREMENT,
 	`url` VARCHAR(255) NOT NULL,
 	`title` TEXT NOT NULL,
@@ -38,7 +38,7 @@ $createStatements["content"] = 'CREATE TABLE `'. $tables["content"] .'` (
 	PRIMARY KEY (`id`,`url`)
 )';
 
-$createStatements["media"] = 'CREATE TABLE `'. $tables["media"] .'` (
+$createStatements["media"] = 'CREATE TABLE IF NOT EXISTS `'. $tables["media"] .'` (
 	`id` INT NOT NULL AUTO_INCREMENT,
 	`name` VARCHAR(255) NOT NULL,
 	`path` TEXT NOT NULL,
@@ -46,13 +46,13 @@ $createStatements["media"] = 'CREATE TABLE `'. $tables["media"] .'` (
 	PRIMARY KEY (`id`)
 )';
 
-$createStatements["templates"] = 'CREATE TABLE `'. $tables["templates"] .'` (
+$createStatements["templates"] = 'CREATE TABLE IF NOT EXISTS `'. $tables["templates"] .'` (
 	`id` INT NOT NULL AUTO_INCREMENT,
 	`name` VARCHAR(255),
 	PRIMARY KEY (`id`)
 )';
 
-$createStatements["users"] = 'CREATE TABLE `' . $tables["users"] . '` (
+$createStatements["users"] = 'CREATE TABLE IF NOT EXISTS `' . $tables["users"] . '` (
 	`id` INT NOT NULL AUTO_INCREMENT,
 	`name` VARCHAR(255) NOT NULL,
 	`pass_hash` TEXT NOT NULL,
