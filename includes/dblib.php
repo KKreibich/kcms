@@ -144,3 +144,23 @@ function setConfigData(string $conf_name, string $conf_data){
 		die("Could not set config value. <br/> Error: " . $conn->error);
 	}
 }
+
+/**
+ * Deletes config entry from Database
+ * @param string $conf_name the name of the config entry
+ * @return bool return true if config has been deleted, false if content didn't exist.
+ */
+function removeConfigData(string $conf_name){
+	global $tables;
+	global $conn;
+	$table = $tables["config"];
+	if(confExists($conf_name)){
+		$q = "DELETE `".$table."` WHERE `conf_name` = '".$conf_name."'";
+		if($conn->query($q)){
+			return true;
+		} else {
+			die("Could not delete config value. <br/> Error: " . $conn->error);
+		}
+	}
+	return false;
+}
