@@ -134,7 +134,7 @@ function setConfigData(string $conf_name, string $conf_data){
 	global $conn;
 	$table = $tables["config"];
 	if(confExists($conf_name)){
-		$q = "UPDATE `".$table."` SET `conf_val` = '". $conn->real_escape_string($conf_name) ."' WHERE `conf_name` = '".$conn->real_escape_string($conf_data)."'";
+		$q = "UPDATE `".$table."` SET `conf_val` = '". $conn->real_escape_string($conf_data) ."' WHERE `conf_name` = '".$conn->real_escape_string($conf_name)."'";
 	} else {
 		$q = "INSERT INTO `".$table."` (`conf_name`, `conf_val`) VALUES ('".$conn->real_escape_string($conf_name)."','".$conn->real_escape_string($conf_data)."')";
 	}
