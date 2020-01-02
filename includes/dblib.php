@@ -1,6 +1,6 @@
 <?php 
 //Include Config & Libs
-include("../config.php");
+include($_SERVER["DOCUMENT_ROOT"]."/config.php");
 
 //Connect to Database
 $conn = new mysqli($dbconfig["server"], 
