@@ -77,7 +77,7 @@ function confExists(string $conf_name){
 	global $tables;
 	global $conn;
 	$table = $tables["config"];
-	$q = "SELECT * FROM '".$table."' WHERE 'conf_name' = '".$conf_name."'";
+	$q = "SELECT * FROM `".$table."` WHERE `conf_name` = '".$conf_name."'";
 	$result = $conn->query($q);
 	if($result->num_rows == 1){
 		return true;
@@ -94,7 +94,7 @@ function getConfData(string $conf_name){
 	global $tables;
 	global $conn;
 	$table = $tables["config"];
-	$q = "SELECT * FROM '".$table."' WHERE 'conf_name' = '".$conf_name."'";
+	$q = "SELECT * FROM `".$table."` WHERE `conf_name` = '".$conf_name."'";
 	$result = $conn->query($q);
 	if($result->num_rows == 1){
 		$data = $result->fetch_assoc();
@@ -134,7 +134,7 @@ function setConfigData(string $conf_name, string $conf_data){
 	global $conn;
 	$table = $tables["config"];
 	if(confExists($conf_name)){
-		$q = "UPDATE '".$table."' SET 'conf_val' = '". $conn->real_escape_string($conf_name) ."' WHERE 'conf_name' = '".$conn->real_escape_string($conf_data)."'";
+		$q = "UPDATE `".$table."` SET `conf_val` = '". $conn->real_escape_string($conf_name) ."' WHERE `conf_name` = '".$conn->real_escape_string($conf_data)."'";
 	} else {
 		$q = "INSERT INTO `".$table."` (`conf_name`, `conf_val`) VALUES ('".$conn->real_escape_string($conf_name)."','".$conn->real_escape_string($conf_data)."')";
 	}
