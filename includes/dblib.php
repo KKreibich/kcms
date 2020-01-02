@@ -76,7 +76,8 @@ foreach($createStatements as $key => $statement){
 function confExists(string $conf_name){
 	global $tables;
 	global $conn;
-	$q = 'SELECT * FROM `' . $tables["config"] . '` WHERE `conf_name` = `'. $conf_name .'`';
+	$table = $tables["config"];
+	$q = "SELECT * FROM '".$table."' WHERE 'conf_name' = '".$conf_name."'";
 	$result = $conn->query($q);
 	if($result->num_rows == 1){
 		return true;
@@ -92,7 +93,8 @@ function confExists(string $conf_name){
 function getConfData(string $conf_name){
 	global $tables;
 	global $conn;
-	$q = 'SELECT * FROM `' . $tables["config"] . '` WHERE `conf_name` = `'. $conf_name .'`';
+	$table = $tables["config"];
+	$q = "SELECT * FROM '".$table."' WHERE 'conf_name' = '".$conf_name."'";
 	$result = $conn->query($q);
 	if($result->num_rows == 1){
 		$data = $result->fetch_assoc();
@@ -108,7 +110,8 @@ function getConfData(string $conf_name){
 function getAllConfigData(){
 	global $tables;
 	global $conn;
-	$q = 'SELECT * FROM ` '. $tables["config"] .' `';
+	$table = $tables["config"];
+	$q = "SELECT * FROM '". $table ."'";
 	$result = $conn->query($q);
 	if($result->num_rows > 0){
 		$configs = array();
@@ -132,7 +135,7 @@ function setConfigData(string $conf_name, string $conf_data){
 	if(confExists($conf_name)){
 		$q = 'UPDATE `'. $tables["config"] .'` SET `conf_val` = `'.$conf_data.'` WHERE `conf_name` = `'.$conf_data.'`';
 	} else {
-		$q = 'INSERT INTO `'.$tables["config"].'`(conf_name, conf_val) 
+		$q = 'INSERT INTO `'.$tables["config"].'`(`conf_name`, `conf_val`) 
 		VALUES (`'.$conn->real_escape_string($conf_name).'`,
 		`'.$conn->real_escape_string($conf_data).'`)';
 	}
