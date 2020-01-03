@@ -116,9 +116,9 @@ function getUserByName(string $name){
     $data["pass_hash"], $data["author_name"], $data["email"]);
 }
 function getAllUsers(){
-    $usersData = getAllUsers();
+    $data = getAllUserData();
     $users = array();
-    foreach($usersData as $userData){
+    foreach($data as $userData){
         $user = new user($userData["id"], $userData["role"], $userData["name"], $userData["pass_hash"], $userData["author_name"], $userData["email"]);
         array_push($users, $user);
     }
