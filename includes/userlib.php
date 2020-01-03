@@ -90,6 +90,7 @@ class user{
      */
     public function setData(int $role, string $name, string $author_name, string $email){
         updateUserData($this->id, $role, $name, $this->pass_hash, $author_name, $email);
+        $this->update();
     }
     /**
      * Sets a new password for the user
