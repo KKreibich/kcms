@@ -224,14 +224,30 @@ function getUserData(int $id){
 /**
  * Sets the data for an user to the database
  * @param int $id The ID for the user
+ * @param int $role the new role
+ * @param string $name the new name
+ * @param string $pass_hash the new, hashed password
+ * @param string $author_name the new author-name
+ * @param string $email the new e-mail adress
  * @return array returns the data, that has been written to the DB
  */
-function updateUserData(int $id){
+function updateUserData(int $id, int $role, string $name, string $pass_hash, string $author_name, string $email){
 	global $tables;
 	global $conn;
 	$table = $tables["users"];
 	if(userExists($id)){
-		$q = "";
+		$q = "UPDATE `" . $table . "` 
+		SET `role` = ". $role .",
+		`name` = '". $conn->real_escape_string($name) ."', 
+		`pass_hash` = '". $conn->real_escape_string($pass_hash) ."', 
+		`author_name` = '". $conn->real_escape_string($author_name) ."', 
+		`email` = '". $conn->real_escape_string($email) ."' 
+		WHERE `id` = ''";
+		if($conn->query($q)){
+			return getUserData($id);
+		} else {
+			die("Error updating user. <br/> Error: " . $conn->error);
+		}
 	} else {
 		die("Trying to update an non-existing user.");
 	}

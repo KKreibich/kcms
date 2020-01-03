@@ -81,4 +81,23 @@ class user{
     public function getEmail(){
         return $this->email;
     }
+    /**
+     * Sets the data to the database
+     * @param int $role RoleID
+     * @param string $name username
+     * @param string $author_name author-name
+     * @param string $email e-mail adress
+     */
+    public function setData(int $role, string $name, string $author_name, string $email){
+        updateUserData($this->id, $role, $name, $this->pass_hash, $author_name, $email);
+    }
+    /**
+     * Sets a new password for the user
+     * @param string $password clear password (not hashed)
+     * @return bool true if data was successfull written
+     */
+    public function setPassword(string $password){
+        $hash = password_hash($password, PASSWORD_BCRYPT);
+        updateUserData($this->id, $this->role, $this->name, $hash, $this->author_name, $this->email);
+    }
 }
