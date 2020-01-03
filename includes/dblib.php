@@ -242,7 +242,7 @@ function updateUserData(int $id, int $role, string $name, string $pass_hash, str
 		`pass_hash` = '". $conn->real_escape_string($pass_hash) ."', 
 		`author_name` = '". $conn->real_escape_string($author_name) ."', 
 		`email` = '". $conn->real_escape_string($email) ."' 
-		WHERE `id` = ''";
+		WHERE `id` = " . $id;
 		if($conn->query($q)){
 			return getUserData($id);
 		} else {
