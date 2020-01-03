@@ -115,6 +115,15 @@ function getUserByName(string $name){
     return new user($data["id"], $data["role"], $data["name"], 
     $data["pass_hash"], $data["author_name"], $data["email"]);
 }
+function getAllUsers(){
+    $data = getAllUserData();
+    $users = array();
+    foreach($data as $userData){
+        $user = new user($userData["id"], $userData["role"], $userData["name"], $userData["pass_hash"], $userData["author_name"], $userData["email"]);
+        array_push($users, $user);
+    }
+    return $users;
+}
 /**
  * Creates a new user
  * @param int $role the roldID

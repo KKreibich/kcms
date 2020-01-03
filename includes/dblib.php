@@ -114,15 +114,11 @@ function getAllConfigData(){
 	$table = $tables["config"];
 	$q = "SELECT * FROM '". $table ."'";
 	$result = $conn->query($q);
-	if($result->num_rows > 0){
-		$configs = array();
-		while($data = $result->fetch_assoc()){
-			array_push($configs, $data);
-		}
-		return $configs;
-	} else {
-		return null;
+	$datalist = array();
+	while($confData = $result->fetch_assoc()){
+		array_push($datalist, $confData);
 	}
+	return $datalist;
 }
 /**
  * Sets config-value in the database
@@ -220,6 +216,18 @@ function getUserData(int $id){
 	} else {
 		return null;
 	}
+}
+function getAllUserData(){
+	global $tables;
+	global $conn;
+	$table = $tables["users"];
+	$q = "SELECT * FROM `". $table ."`";
+	$result = $conn->query($q);
+	$datalist = array();
+	while($userData = $result->fetch_assoc()){
+		array_push($datalist, $userData);
+	}
+	return $datalist;
 }
 /**
  * Sets the data for an user to the database
