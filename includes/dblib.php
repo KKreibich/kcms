@@ -164,3 +164,14 @@ function removeConfigData(string $conf_name){
 	}
 	return false;
 }
+
+// Functions for User Data-Management
+function getUserData(int $id){
+
+}
+function setUserData(){
+
+}
+function removeUserData(){
+
+}
