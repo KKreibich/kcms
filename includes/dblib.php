@@ -254,19 +254,21 @@ function updateUserData(int $id, int $role, string $name, string $pass_hash, str
 }
 /**
  * Creates an new user in the Database
+ * @param int $role roleID
  * @param string $name a unique name for the user
  * @param string $pass_hash the hashed password
  * @param string $author_name the name that should be displayed in posts
  * @param string $email the users e-mail adress
  * @return array the data that has been written to the DB
  */
-function addUserData(string $name, string $pass_hash, string $author_name, string $email){
+function addUserData(int $role, string $name, string $pass_hash, string $author_name, string $email){
 	global $tables;
 	global $conn;
 	$table = $tables["users"];
 	if(getUserID($name) == null){
-		$q = "INSERT INTO `". $table ."`(`name`,`pass_hash`,`author_name`,`email`) 
-		VALUES ('". $conn->real_escape_string($name) ."',
+		$q = "INSERT INTO `". $table ."`(`role`,`name`,`pass_hash`,`author_name`,`email`) 
+		VALUES ('".$role."',
+		'". $conn->real_escape_string($name) ."',
 		'". $conn->real_escape_string($pass_hash) ."',
 		'". $conn->real_escape_string($author_name) ."',
 		'". $conn->real_escape_string($email) ."')";

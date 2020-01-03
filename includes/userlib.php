@@ -114,3 +114,18 @@ function getUserByName(string $name){
     return new user($data["id"], $data["role"], $data["name"], 
     $data["pass_hash"], $data["author_name"], $data["email"]);
 }
+/**
+ * Creates a new user
+ * @param int $role the roldID
+ * @param string $name the username
+ * @param string $passwrod the clear, unhashed password
+ * @param string $author_name the authorname
+ * @param string $email the e-mail adress
+ * @return user returns the user-object
+ */
+function createNewUser(int $role, string $name,string $password, string $author_name, string $email){
+    $hash = password_hash($password, PASSWORD_BCRYPT);
+    $data = addUserData($role, $name, $hash, $author_name, $email);
+    return new user($data["id"], $data["role"], $data["name"], 
+    $data["pass_hash"], $data["author_name"], $data["email"]);
+}
