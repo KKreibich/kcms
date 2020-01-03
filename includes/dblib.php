@@ -54,6 +54,7 @@ $createStatements["templates"] = 'CREATE TABLE IF NOT EXISTS `'. $tables["templa
 
 $createStatements["users"] = 'CREATE TABLE IF NOT EXISTS `' . $tables["users"] . '` (
 	`id` INT NOT NULL AUTO_INCREMENT,
+	`role` INT NOT NULL,
 	`name` VARCHAR(255) NOT NULL,
 	`pass_hash` TEXT NOT NULL,
 	`author_name` VARCHAR(255) NOT NULL,
