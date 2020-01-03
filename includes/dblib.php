@@ -166,12 +166,115 @@ function removeConfigData(string $conf_name){
 }
 
 // Functions for User Data-Management
+/**
+ * Checks if User Exists
+ * @param int $id The ID of the User
+ * @return bool true if users exists, false if not
+ */
+function userExists(int $id){
+	global $tables;
+	global $conn;
+	$table = $tables["users"];
+	$q = "SELECT * FROM `".$table."` WHERE `id` = '".$id."'";
+	$result = $conn->query($q);
+	if($result->num_rows == 1){
+		return true;
+	} else {
+		return false;
+	}
+}
+/**
+ * Gets the ID of an user
+ * @param string $name The name of the user
+ * @return int returns the ID, null if user doesn't exist
+ */
+function getUserID(string $name){
+	global $tables;
+	global $conn;
+	$table = $tables["users"];
+	$q = "SELECT * FROM `".$table."` WHERE `name` = '".$name."'";
+	$result = $conn->query($q);
+	if($result->num_rows == 1){
+		$data = $result->fetch_assoc();
+		return $data["id"];
+	} else {
+		return null;
+	}
+}
+
+/**
+ * Gets the Data for a user by ID
+ * @param int $id The ID of the user
+ * @return array returns array with data from database or null, if user doesn't exist
+ */
 function getUserData(int $id){
-
+	global $tables;
+	global $conn;
+	$table = $tables["users"];
+	$q = "SELECT * FROM `".$table."` WHERE `id` = '".$id."'";
+	$result = $conn->query($q);
+	if($result->num_rows == 1){
+		$data = $result->fetch_assoc();
+		return $data;
+	} else {
+		return null;
+	}
 }
-function setUserData(){
-
+/**
+ * Sets the data for an user to the database
+ * @param int $id The ID for the user
+ * @return array returns the data, that has been written to the DB
+ */
+function updateUserData(int $id){
+	global $tables;
+	global $conn;
+	$table = $tables["users"];
+	if(userExists($id)){
+		$q = "";
+	} else {
+		die("Trying to update an non-existing user.");
+	}
 }
-function removeUserData(){
-
+/**
+ * Creates an new user in the Database
+ * @param string $name a unique name for the user
+ * @param string $pass_hash the hashed password
+ * @param string $author_name the name that should be displayed in posts
+ * @param string $email the users e-mail adress
+ * @return array the data that has been written to the DB
+ */
+function addUserData(string $name, string $pass_hash, string $author_name, string $email){
+	global $tables;
+	global $conn;
+	$table = $tables["users"];
+	if(getUserID($name) == null){
+		$q = "INSERT INTO `". $table ."`(`name`,`pass_hash`,`author_name`,`email`) 
+		VALUES ('". $conn->real_escape_string($name) ."',
+		'". $conn->real_escape_string($pass_hash) ."',
+		'". $conn->real_escape_string($author_name) ."',
+		'". $conn->real_escape_string($email) ."')";
+		if($conn->query($q)){
+			return getUserData(getUserID($name));
+		} else {
+			die("Error creating user. <br/> Error: " . $conn->error);
+		}
+	} else {
+		die("Trying to create user that aready exists.");
+	}
+}
+/**
+ * Removes the data for a user from the Database
+ * @param int $id The ID of the user
+ * @return bool returns true if user has been deleted
+ */
+function removeUserData(int $id){
+	global $tables;
+	global $conn;
+	$table = $tables["users"];
+	$q = "DELETE FROM `".$table."` WHERE `id` = '".$id."'";
+	if($conn->query($q)){
+		return true;
+	} else {
+		die("Could not delete User-Data. <br/> Error: " . $conn->error);
+	}
 }
