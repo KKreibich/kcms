@@ -1,12 +1,15 @@
-<?php 
+<?php
 //Include Config & Libs
-include($_SERVER["DOCUMENT_ROOT"]."/config.php");
+include($_SERVER["DOCUMENT_ROOT"] . "/config.php");
 
 //Connect to Database
-$conn = new mysqli($dbconfig["server"], 
-$dbconfig["username"],
-$dbconfig["password"],
-$dbconfig["database"]);
+$conn = new mysqli(
+	$dbconfig["server"],
+	$dbconfig["username"],
+	$dbconfig["password"],
+	$dbconfig["database"]
+);
+$conn->set_charset("utf8_bin");
 
 //Set table names
 $tables = array();
@@ -19,12 +22,12 @@ $tables["users"] = $dbconfig["prefix"] . "users";
 
 //Create statements
 $createStatements = array();
-$createStatements["config"] = 'CREATE TABLE IF NOT EXISTS `' . $tables["config"] .'` (
+$createStatements["config"] = 'CREATE TABLE IF NOT EXISTS `' . $tables["config"] . '` (
 	`conf_name` VARCHAR(255) NOT NULL,
 	`conf_val` VARCHAR(255) NOT NULL,
     PRIMARY KEY (`conf_name`))';
 
-$createStatements["content"] = 'CREATE TABLE IF NOT EXISTS `'. $tables["content"] .'` (
+$createStatements["content"] = 'CREATE TABLE IF NOT EXISTS `' . $tables["content"] . '` (
 	`id` INT NOT NULL AUTO_INCREMENT,
 	`url` VARCHAR(255) NOT NULL,
 	`title` TEXT NOT NULL,
@@ -38,7 +41,7 @@ $createStatements["content"] = 'CREATE TABLE IF NOT EXISTS `'. $tables["content"
 	PRIMARY KEY (`id`,`url`)
 )';
 
-$createStatements["media"] = 'CREATE TABLE IF NOT EXISTS `'. $tables["media"] .'` (
+$createStatements["media"] = 'CREATE TABLE IF NOT EXISTS `' . $tables["media"] . '` (
 	`id` INT NOT NULL AUTO_INCREMENT,
 	`name` VARCHAR(255) NOT NULL,
 	`path` TEXT NOT NULL,
@@ -46,7 +49,7 @@ $createStatements["media"] = 'CREATE TABLE IF NOT EXISTS `'. $tables["media"] .'
 	PRIMARY KEY (`id`)
 )';
 
-$createStatements["templates"] = 'CREATE TABLE IF NOT EXISTS `'. $tables["templates"] .'` (
+$createStatements["templates"] = 'CREATE TABLE IF NOT EXISTS `' . $tables["templates"] . '` (
 	`id` INT NOT NULL AUTO_INCREMENT,
 	`name` VARCHAR(255),
 	PRIMARY KEY (`id`)
@@ -62,10 +65,10 @@ $createStatements["users"] = 'CREATE TABLE IF NOT EXISTS `' . $tables["users"] .
 	PRIMARY KEY (`id`,`name`)
 )';
 //Query statemens
-foreach($createStatements as $key => $statement){
-    if(!$conn->query($statement)){
-        die("Could not create table: " . $key . ". Please contact an administrator. <br/> Error: " . $conn->error);
-    }
+foreach ($createStatements as $key => $statement) {
+	if (!$conn->query($statement)) {
+		die("Could not create table: " . $key . ". Please contact an administrator. <br/> Error: " . $conn->error);
+	}
 }
 
 //functions for config DB
@@ -74,13 +77,18 @@ foreach($createStatements as $key => $statement){
  * @param string $conf_name name of the config entry
  * @return bool Config exists or not
  */
-function confExists(string $conf_name){
+function confExists(string $conf_name)
+{
 	global $tables;
 	global $conn;
 	$table = $tables["config"];
-	$q = "SELECT * FROM `".$table."` WHERE `conf_name` = '".$conf_name."'";
-	$result = $conn->query($q);
-	if($result->num_rows == 1){
+	$q = "SELECT * FROM `" . $table . "` WHERE `conf_name` = ?";
+	$stmt = $conn->prepare($q);
+	$stmt->bind_param("s", $conf_name);
+	$stmt->execute();
+	$result = $stmt->get_result();
+	$stmt->close();
+	if ($result->num_rows == 1) {
 		return true;
 	} else {
 		return false;
@@ -91,13 +99,17 @@ function confExists(string $conf_name){
  * @param string $conf_name name of the config entry
  * @return array Returns array with data, keys: "conf_name", "conf_val"
  */
-function getConfData(string $conf_name){
+function getConfData(string $conf_name)
+{
 	global $tables;
 	global $conn;
 	$table = $tables["config"];
-	$q = "SELECT * FROM `".$table."` WHERE `conf_name` = '".$conf_name."'";
-	$result = $conn->query($q);
-	if($result->num_rows == 1){
+	$q = "SELECT * FROM `" . $table . "` WHERE `conf_name` = ?";
+	$stmt = $conn->prepare($q);
+	$stmt->bind_param("s", $conf_name);
+	$result = $stmt->get_result();
+	$stmt->close();
+	if ($result->num_rows == 1) {
 		$data = $result->fetch_assoc();
 		return $data;
 	} else {
@@ -108,14 +120,15 @@ function getConfData(string $conf_name){
  * Gets all config-data from the Database
  * @return array Returns array. Array contains arrays with config-data. keys: "conf_name", "conf_val"
  */
-function getAllConfigData(){
+function getAllConfigData()
+{
 	global $tables;
 	global $conn;
 	$table = $tables["config"];
-	$q = "SELECT * FROM '". $table ."'";
+	$q = "SELECT * FROM '" . $table . "'";
 	$result = $conn->query($q);
 	$datalist = array();
-	while($confData = $result->fetch_assoc()){
+	while ($confData = $result->fetch_assoc()) {
 		array_push($datalist, $confData);
 	}
 	return $datalist;
@@ -126,40 +139,50 @@ function getAllConfigData(){
  * @param string $conf_data data that should be set
  * @return array returns the data as array. Keys: "conf_name", "conf_val"
  */
-function setConfigData(string $conf_name, string $conf_data){
+function setConfigData(string $conf_name, string $conf_data)
+{
 	global $tables;
 	global $conn;
 	$table = $tables["config"];
-	if(confExists($conf_name)){
-		$q = "UPDATE `".$table."` SET `conf_val` = '". $conn->real_escape_string($conf_data) ."' WHERE `conf_name` = '".$conn->real_escape_string($conf_name)."'";
+	if (confExists($conf_name)) {
+		$q = "UPDATE `" . $table . "` SET `conf_val` = ? WHERE `conf_name` = ?";
+		$stmt = $conn->prepare($q);
+		$stmt->bind_param("ss", $conf_name, $conf_name);
 	} else {
-		$q = "INSERT INTO `".$table."` (`conf_name`, `conf_val`) VALUES ('".$conn->real_escape_string($conf_name)."','".$conn->real_escape_string($conf_data)."')";
+		$q = "INSERT INTO `" . $table . "` (`conf_name`, `conf_val`) VALUES (?,?)";
+		$stmt = $conn->prepare($q);
+		$stmt->bind_param("ss", $conf_name, $conf_data);
 	}
-	if($conn->query($q)){
-		return getConfData($conf_name);
-	} else {
-		die("Could not set config value. <br/> Error: " . $conn->error);
+	try {
+		$stmt->execute();
+		$stmt->close();
+	} catch (Exception $e) {
+		die("Could not update or insert Config-Data. <br/> Error: " . $conn->error);
 	}
 }
 
 /**
  * Deletes config entry from Database
  * @param string $conf_name the name of the config entry
- * @return bool return true if config has been deleted, false if content didn't exist.
+ * @return bool return true if config has been deleted
  */
-function removeConfigData(string $conf_name){
+function removeConfigData(string $conf_name)
+{
 	global $tables;
 	global $conn;
 	$table = $tables["config"];
-	if(confExists($conf_name)){
-		$q = "DELETE FROM `".$table."` WHERE `conf_name` = '". $conn->real_escape_string($conf_name) ."'";
-		if($conn->query($q)){
-			return true;
-		} else {
-			die("Could not delete config value. <br/> Error: " . $conn->error);
+	if (confExists($conf_name)) {
+		$q = "DELETE FROM `" . $table . "` WHERE `conf_name` = ?";
+		$stmt = $conn->prepare($q);
+		$stmt->bind_param("s", $conf_name);
+		try {
+			$stmt->execute();
+			$stmt->close();
+		} catch (Exception $e) {
+			die("Could not remove Config-Data. <br/> Error: " . $conn->error);
 		}
 	}
-	return false;
+	return true;
 }
 
 // Functions for User Data-Management
@@ -168,16 +191,25 @@ function removeConfigData(string $conf_name){
  * @param int $id The ID of the User
  * @return bool true if users exists, false if not
  */
-function userExists(int $id){
+function userExists(int $id)
+{
 	global $tables;
 	global $conn;
 	$table = $tables["users"];
-	$q = "SELECT * FROM `".$table."` WHERE `id` = '".$id."'";
-	$result = $conn->query($q);
-	if($result->num_rows == 1){
-		return true;
-	} else {
-		return false;
+	$q = "SELECT * FROM `" . $table . "` WHERE `id` = ?";
+	$stmt = $conn->prepare($q);
+	$stmt->bind_param("i", $id);
+	try {
+		$stmt->execute();
+		$result = $stmt->get_result();
+		$stmt->close();
+		if ($result->num_rows == 1) {
+			return true;
+		} else {
+			return false;
+		}
+	} catch (Exception $e) {
+		die("Could not check if user exists. <br/> Error: " . $conn->error);
 	}
 }
 /**
@@ -185,17 +217,26 @@ function userExists(int $id){
  * @param string $name The name of the user
  * @return int returns the ID, null if user doesn't exist
  */
-function getUserID(string $name){
+function getUserID(string $name)
+{
 	global $tables;
 	global $conn;
 	$table = $tables["users"];
-	$q = "SELECT * FROM `".$table."` WHERE `name` = '".$name."'";
-	$result = $conn->query($q);
-	if($result->num_rows == 1){
-		$data = $result->fetch_assoc();
-		return $data["id"];
-	} else {
-		return null;
+	$q = "SELECT * FROM `" . $table . "` WHERE `name` = ?";
+	$stmt = $conn->prepare($q);
+	$stmt->bind_param("s", $name);
+	try {
+		$stmt->execute();
+		$result = $stmt->get_result();
+		$stmt->close();
+		if ($result->num_rows == 1) {
+			$data = $result->fetch_assoc();
+			return $data["id"];
+		} else {
+			return null;
+		}
+	} catch (Exception $e) {
+		die("Could not get userID. <br/> Error: " . $conn->error);
 	}
 }
 
@@ -204,27 +245,36 @@ function getUserID(string $name){
  * @param int $id The ID of the user
  * @return array returns array with data from database or null, if user doesn't exist
  */
-function getUserData(int $id){
+function getUserData(int $id)
+{
 	global $tables;
 	global $conn;
 	$table = $tables["users"];
-	$q = "SELECT * FROM `".$table."` WHERE `id` = '".$id."'";
-	$result = $conn->query($q);
-	if($result->num_rows == 1){
+	$q = "SELECT * FROM `" . $table . "` WHERE `id` = ?";
+	$stmt = $conn->prepare($q);
+	$stmt->bind_param("i", $id);
+	try{
+		$stmt->execute();
+		$result = $stmt->get_result();
+		$stmt->close();
+	if ($result->num_rows == 1) {
 		$data = $result->fetch_assoc();
 		return $data;
 	} else {
 		return null;
+	}} catch(Exception $e){
+		die("Could not get user-data. <br/> Error: " . $conn->error);
 	}
 }
-function getAllUserData(){
+function getAllUserData()
+{
 	global $tables;
 	global $conn;
 	$table = $tables["users"];
-	$q = "SELECT * FROM `". $table ."`";
+	$q = "SELECT * FROM `" . $table . "`";
 	$result = $conn->query($q);
 	$datalist = array();
-	while($userData = $result->fetch_assoc()){
+	while ($userData = $result->fetch_assoc()) {
 		array_push($datalist, $userData);
 	}
 	return $datalist;
@@ -239,22 +289,21 @@ function getAllUserData(){
  * @param string $email the new e-mail adress
  * @return array returns the data, that has been written to the DB
  */
-function updateUserData(int $id, int $role, string $name, string $pass_hash, string $author_name, string $email){
+function updateUserData(int $id, int $role, string $name, string $pass_hash, string $author_name, string $email)
+{
 	global $tables;
 	global $conn;
 	$table = $tables["users"];
-	if(userExists($id)){
-		$q = "UPDATE `" . $table . "` 
-		SET `role` = ". $role .",
-		`name` = '". $conn->real_escape_string($name) ."', 
-		`pass_hash` = '". $conn->real_escape_string($pass_hash) ."', 
-		`author_name` = '". $conn->real_escape_string($author_name) ."', 
-		`email` = '". $conn->real_escape_string($email) ."' 
-		WHERE `id` = " . $id;
-		if($conn->query($q)){
+	if (userExists($id)) {
+		$q = "UPDATE `" . $table . "` SET `role` = ?,`name` = ?', `pass_hash` = ?, `author_name` = ? `email` = ? WHERE `id` = ?";
+		$stmt = $conn->prepare($q);
+		$stmt->bind_param("issssi", $role, $name, $pass_hash, $author_name, $email, $id);
+		try{
+			$stmt->execute();
+			$stmt->close();
 			return getUserData($id);
-		} else {
-			die("Error updating user. <br/> Error: " . $conn->error);
+		}catch(Exception $e){
+			die("Could not update user-data. <br/> Error: " . $conn->error);
 		}
 	} else {
 		die("Trying to update an non-existing user.");
@@ -269,21 +318,21 @@ function updateUserData(int $id, int $role, string $name, string $pass_hash, str
  * @param string $email the users e-mail adress
  * @return array the data that has been written to the DB
  */
-function addUserData(int $role, string $name, string $pass_hash, string $author_name, string $email){
+function addUserData(int $role, string $name, string $pass_hash, string $author_name, string $email)
+{
 	global $tables;
 	global $conn;
 	$table = $tables["users"];
-	if(getUserID($name) == null){
-		$q = "INSERT INTO `". $table ."`(`role`,`name`,`pass_hash`,`author_name`,`email`) 
-		VALUES ('".$role."',
-		'". $conn->real_escape_string($name) ."',
-		'". $conn->real_escape_string($pass_hash) ."',
-		'". $conn->real_escape_string($author_name) ."',
-		'". $conn->real_escape_string($email) ."')";
-		if($conn->query($q)){
+	if (getUserID($name) == null) {
+		$q = "INSERT INTO `" . $table . "`(`role`,`name`,`pass_hash`,`author_name`,`email`) VALUES (?,?,?,?,?)";
+		$stmt = $conn->prepare($q);
+		$stmt->bind_param("issss", $role, $name, $pass_hash, $author_name, $email);
+		try{
+			$stmt->execute();
+			$stmt->close();
 			return getUserData(getUserID($name));
-		} else {
-			die("Error creating user. <br/> Error: " . $conn->error);
+		}catch(Exception $e){
+			die("Error creating user-data. <br/> Error: " . $conn->error);
 		}
 	} else {
 		die("Trying to create user that aready exists.");
@@ -294,14 +343,46 @@ function addUserData(int $role, string $name, string $pass_hash, string $author_
  * @param int $id The ID of the user
  * @return bool returns true if user has been deleted
  */
-function removeUserData(int $id){
+function removeUserData(int $id)
+{
 	global $tables;
 	global $conn;
 	$table = $tables["users"];
-	$q = "DELETE FROM `".$table."` WHERE `id` = '".$id."'";
-	if($conn->query($q)){
+	$q = "DELETE FROM `" . $table . "` WHERE `id` = ?";
+	$stmt = $conn->prepare($q);
+	$stmt->bind_param("i", $id);
+	try{
+		$stmt->execute();
+		$stmt->close();
 		return true;
-	} else {
-		die("Could not delete User-Data. <br/> Error: " . $conn->error);
+	} catch(Exception $e){
+		die("Error deleting user-data. <br/> Error: " . $conn->error);
 	}
 }
+
+//Functions for Content-DB Management
+/**
+ * Get Content-Data as array
+ * @param int $id The Id of the content
+ * @return array array with the content data
+ 
+function getCotentData(int $id)
+{
+	global $conn;
+	global $tables;
+	$table = $tables["content"];
+	$q = "SELECT * FROM `" . $table . "` WHERE `id` = '" . $id . "'";
+}
+function getAllContentData()
+{
+}
+function setContentData()
+{
+}
+function removeContentData()
+{
+}
+function getCotentIdByURL()
+{
+}
+*/
