@@ -253,16 +253,17 @@ function getUserData(int $id)
 	$q = "SELECT * FROM `" . $table . "` WHERE `id` = ?";
 	$stmt = $conn->prepare($q);
 	$stmt->bind_param("i", $id);
-	try{
+	try {
 		$stmt->execute();
 		$result = $stmt->get_result();
 		$stmt->close();
-	if ($result->num_rows == 1) {
-		$data = $result->fetch_assoc();
-		return $data;
-	} else {
-		return null;
-	}} catch(Exception $e){
+		if ($result->num_rows == 1) {
+			$data = $result->fetch_assoc();
+			return $data;
+		} else {
+			return null;
+		}
+	} catch (Exception $e) {
 		die("Could not get user-data. <br/> Error: " . $conn->error);
 	}
 }
@@ -298,11 +299,11 @@ function updateUserData(int $id, int $role, string $name, string $pass_hash, str
 		$q = "UPDATE `" . $table . "` SET `role` = ?,`name` = ?', `pass_hash` = ?, `author_name` = ? `email` = ? WHERE `id` = ?";
 		$stmt = $conn->prepare($q);
 		$stmt->bind_param("issssi", $role, $name, $pass_hash, $author_name, $email, $id);
-		try{
+		try {
 			$stmt->execute();
 			$stmt->close();
 			return getUserData($id);
-		}catch(Exception $e){
+		} catch (Exception $e) {
 			die("Could not update user-data. <br/> Error: " . $conn->error);
 		}
 	} else {
@@ -327,11 +328,11 @@ function addUserData(int $role, string $name, string $pass_hash, string $author_
 		$q = "INSERT INTO `" . $table . "`(`role`,`name`,`pass_hash`,`author_name`,`email`) VALUES (?,?,?,?,?)";
 		$stmt = $conn->prepare($q);
 		$stmt->bind_param("issss", $role, $name, $pass_hash, $author_name, $email);
-		try{
+		try {
 			$stmt->execute();
 			$stmt->close();
 			return getUserData(getUserID($name));
-		}catch(Exception $e){
+		} catch (Exception $e) {
 			die("Error creating user-data. <br/> Error: " . $conn->error);
 		}
 	} else {
@@ -351,11 +352,11 @@ function removeUserData(int $id)
 	$q = "DELETE FROM `" . $table . "` WHERE `id` = ?";
 	$stmt = $conn->prepare($q);
 	$stmt->bind_param("i", $id);
-	try{
+	try {
 		$stmt->execute();
 		$stmt->close();
 		return true;
-	} catch(Exception $e){
+	} catch (Exception $e) {
 		die("Error deleting user-data. <br/> Error: " . $conn->error);
 	}
 }
@@ -365,18 +366,93 @@ function removeUserData(int $id)
  * Get Content-Data as array
  * @param int $id The Id of the content
  * @return array array with the content data
- 
+ */
 function getCotentData(int $id)
 {
 	global $conn;
 	global $tables;
 	$table = $tables["content"];
-	$q = "SELECT * FROM `" . $table . "` WHERE `id` = '" . $id . "'";
+	$q = "SELECT * FROM `" . $table . "` WHERE `id` = ?";
+	$stmt = $conn->prepare($q);
+	$stmt->bind_param("i", $id);
+	try {
+		$stmt->execute();
+		$result = $stmt->get_result();
+		$stmt->close();
+		$data = $result->fetch_assoc();
+
+		if ($data["published"] == 1) {
+			$data["published"] = true;
+		} else {
+			$data["published"] = false;
+		}
+
+		if ($data["static"] == 1) {
+			$data["static"] = true;
+		} else {
+			$data["static"] = false;
+		}
+
+		if ($data["showdate"] == 1) {
+			$data["showdate"] = true;
+		} else {
+			$data["showdate"] = false;
+		}
+		return $data;
+	} catch (Exception $e) {
+		die("Error getting content. <br/> Error: " . $conn->error);
+	}
 }
+/**
+ * Gets the data for all content in DB
+ * @return array array containing the normal content-arrays
+ */
 function getAllContentData()
 {
+	global $tables;
+	global $conn;
+	$table = $tables["content"];
+	$q = "SELECT * FROM `" . $table . "`";
+	$stmt = $conn->prepare($q);
+	try {
+		$stmt->execute();
+		$result = $stmt->get_result();
+		$stmt->close();
+		$compdata = array();
+		while ($data = $result->fetch_assoc()) {
+			if ($data["published"] == 1) {
+				$data["published"] = true;
+			} else {
+				$data["published"] = false;
+			}
+
+			if ($data["static"] == 1) {
+				$data["static"] = true;
+			} else {
+				$data["static"] = false;
+			}
+
+			if ($data["showdate"] == 1) {
+				$data["showdate"] = true;
+			} else {
+				$data["showdate"] = false;
+			}
+			array_push($compdata, $data);
+		}
+		return $compdata;
+	} catch (Exception $e) {
+		die("Error getting all content-data. <br/> Error: " . $conn->error);
+	}
 }
-function setContentData()
+/**
+ * 
+ */
+function addContentData(string $url, string $title, string $subtitle, string $content_html,
+int $image, int $created, bool $published, bool $static, bool $showdate)
+{
+	//TODO set Content Data
+}
+function updateContentData()
 {
 }
 function removeContentData()
@@ -385,4 +461,3 @@ function removeContentData()
 function getCotentIdByURL()
 {
 }
-*/
