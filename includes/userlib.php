@@ -100,4 +100,17 @@ class user{
         $hash = password_hash($password, PASSWORD_BCRYPT);
         updateUserData($this->id, $this->role, $this->name, $hash, $this->author_name, $this->email);
     }
+    public function delete(){
+        removeUserData($this->id);
+    }
+}
+function getUserByID(int $id){
+    $data = getUserData($id);
+    return new user($data["id"], $data["role"], $data["name"], 
+    $data["pass_hash"], $data["author_name"], $data["email"]);
+}
+function getUserByName(string $name){
+    $data = getUserData(getUserID($name));
+    return new user($data["id"], $data["role"], $data["name"], 
+    $data["pass_hash"], $data["author_name"], $data["email"]);
 }
