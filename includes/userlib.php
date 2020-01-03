@@ -81,4 +81,52 @@ class user{
     public function getEmail(){
         return $this->email;
     }
+    /**
+     * Sets the data to the database
+     * @param int $role RoleID
+     * @param string $name username
+     * @param string $author_name author-name
+     * @param string $email e-mail adress
+     */
+    public function setData(int $role, string $name, string $author_name, string $email){
+        updateUserData($this->id, $role, $name, $this->pass_hash, $author_name, $email);
+        $this->update();
+    }
+    /**
+     * Sets a new password for the user
+     * @param string $password clear password (not hashed)
+     * @return bool true if data was successfull written
+     */
+    public function setPassword(string $password){
+        $hash = password_hash($password, PASSWORD_BCRYPT);
+        updateUserData($this->id, $this->role, $this->name, $hash, $this->author_name, $this->email);
+    }
+    public function delete(){
+        removeUserData($this->id);
+    }
+}
+function getUserByID(int $id){
+    $data = getUserData($id);
+    return new user($data["id"], $data["role"], $data["name"], 
+    $data["pass_hash"], $data["author_name"], $data["email"]);
+}
+function getUserByName(string $name){
+    $data = getUserData(getUserID($name));
+    return new user($data["id"], $data["role"], $data["name"], 
+    $data["pass_hash"], $data["author_name"], $data["email"]);
+}
+/**
+ * Creates a new user
+ * @param int $role the roldID
+ * @param string $name the username
+ * @param string $passwrod the clear, unhashed password
+ * @param string $author_name the authorname
+ * @param string $email the e-mail adress
+ * @return user returns the user-object
+ */
+function createNewUser(int $role, string $name,string $password, string $author_name, string $email){
+    $hash = password_hash($password, PASSWORD_BCRYPT);
+    $data = addUserData($role, $name, $hash, $author_name, $email);
+    return new user($data["id"], $data["role"], $data["name"], 
+    $data["pass_hash"], $data["author_name"], $data["email"]);
 }
