@@ -445,19 +445,133 @@ function getAllContentData()
 	}
 }
 /**
- * 
+ * Adds the given content-data to the database
+ * @param string $url the end of the url for the page
+ * @param string $title the title of the page
+ * @param string $subtitle the subtitle of the page
+ * @param string $content_html the content of the page (html support)
+ * @param int $image the mediaID of the image
+ * @param int $created timestamp, when the page was created / published
+ * @param bool $published published
+ * @param bool $static static
+ * @param bool $showdate show date
  */
 function addContentData(string $url, string $title, string $subtitle, string $content_html,
 int $image, int $created, bool $published, bool $static, bool $showdate)
 {
-	//TODO set Content Data
+	global $conn;
+	global $tables;
+	$table = $tables["content"];
+
+	$q = "INSERT INTO `". $table ."`
+	(`url`,`title`,`subtitle`,`content_html`,`image`,
+	`created`,`published`,`static`,`showdate`) VALUES (?,?,?,?,?,?,?,?,?)";
+	$stmt = $conn->prepare($q);
+
+	if($published){
+		$published_db = 1;
+	} else {
+		$published_db = 0;
+	}
+	if($static){
+		$static_db = 1;
+	} else {
+		$static_db = 0;
+	}
+	if($showdate){
+		$showdate_db = 1;
+	} else {
+		$showdate_db = 0;
+	}
+
+	$stmt->bind_param("ssssiiiii", $url, $title, $subtitle, $content_html, $image, 
+	$created, $published_db, $static_db, $showdate_db);
+	try{
+		$stmt->execute();
+		$stmt->close();
+		return true;
+	} catch (Exception $e){
+		die("Could not write content-data to database. <br/> Error: " . $conn->error);
+	}
 }
-function updateContentData()
+function updateContentData(int $id, string $url, string $title, string $subtitle, string $content_html,
+int $image, int $created, bool $published, bool $static, bool $showdate)
 {
+	global $conn;
+	global $tables;
+	$table = $tables["content"];
+
+	$q = "UPDATE `". $table ."`
+	 SET `url` = ?,`title` = ?,`subtitle` = ?,`content_html` = ?,`image` = ?,
+	`created` = ?,`published` = ?,`static` = ?,`showdate` = ? WHERE `id` = ?";
+	$stmt = $conn->prepare($q);
+
+	if($published){
+		$published_db = 1;
+	} else {
+		$published_db = 0;
+	}
+	if($static){
+		$static_db = 1;
+	} else {
+		$static_db = 0;
+	}
+	if($showdate){
+		$showdate_db = 1;
+	} else {
+		$showdate_db = 0;
+	}
+
+	$stmt->bind_param("ssssiiiiii", $url, $title, $subtitle, $content_html, $image, 
+	$created, $published_db, $static_db, $showdate_db, $id);
+	try{
+		$stmt->execute();
+		$stmt->close();
+		return true;
+	} catch (Exception $e){
+		die("Could not update content-data in database. <br/> Error: " . $conn->error);
+	}
 }
-function removeContentData()
+function removeContentData(int $id)
 {
+	global $conn;
+	global $tables;
+	$table = $tables["content"];
+	$q = "DELETE FROM `". $table ."` WHERE `id` = ?";
+	$stmt = $conn->prepare($q);
+	$stmt->bind_param("i", $id);
+	try{
+		$stmt->execute();
+		$stmt->close();
+		return true;
+	} catch (Exception $e){
+		die("Could not delete content-data from database. <br/> Error: " . $conn->error);
+	}
 }
-function getCotentIdByURL()
+/**
+ * Gets the ID of a content-item by url
+ * @param string $url the url
+ * @return int Returns the ID, -1 if not found
+ */
+function getContentIdByURL(string $url)
 {
+	global $conn;
+	global $tables;
+	$table = $tables["content"];
+	$q = "SELECT * FROM `". $table ."` WHERE `url` = ?";
+	$stmt = $conn->prepare($q);
+	$stmt->bind_param("s", $url);
+	try{
+		$stmt->execute();
+		$result = $stmt->get_result();
+		$stmt->close();
+		if($result->num_rows == 1){
+		$data = $result->fetch_assoc();
+		return $data["id"];
+		} else {
+			return -1;
+		}
+	} catch(Exception $e){
+		die("Could not get contentID by URL. <br/> Error: " . $conn->error);
+	}
 }
