@@ -400,7 +400,7 @@ function getCotentData(int $id)
 		}
 		return $data;
 	} catch (Exception $e) {
-		die("Error getting content. <br/> Error: " . $conn->error);
+		die("Error getting content-data. <br/> Error: " . $conn->error);
 	}
 }
 /**
@@ -551,10 +551,50 @@ function removeContentData(int $id)
 /**
  * Gets the ID of a content-item by url
  * @param string $url the url
- * @return int Returns the ID, -1 if not found
+ * @return array returns array with cotent-data
  */
-function getContentIdByURL(string $url)
+function getContentByURL(string $url)
 {
+	global $conn;
+	global $tables;
+	$table = $tables["content"];
+	$q = "SELECT * FROM `". $table ."` WHERE `url` = ?";
+	$stmt = $conn->prepare($q);
+	$stmt->bind_param("s", $url);
+	try {
+		$stmt->execute();
+		$result = $stmt->get_result();
+		$stmt->close();
+		$data = $result->fetch_assoc();
+
+		if ($data["published"] == 1) {
+			$data["published"] = true;
+		} else {
+			$data["published"] = false;
+		}
+
+		if ($data["static"] == 1) {
+			$data["static"] = true;
+		} else {
+			$data["static"] = false;
+		}
+
+		if ($data["showdate"] == 1) {
+			$data["showdate"] = true;
+		} else {
+			$data["showdate"] = false;
+		}
+		return $data;
+	} catch (Exception $e) {
+		die("Error getting content. <br/> Error: " . $conn->error);
+	}
+}
+/**
+ * Checks, if content exists by URL
+ * @param string $url The URL to check
+ * @return bool true if exists, false if not
+ */
+function contentDataExists(string $url){
 	global $conn;
 	global $tables;
 	$table = $tables["content"];
@@ -565,13 +605,8 @@ function getContentIdByURL(string $url)
 		$stmt->execute();
 		$result = $stmt->get_result();
 		$stmt->close();
-		if($result->num_rows == 1){
-		$data = $result->fetch_assoc();
-		return $data["id"];
-		} else {
-			return -1;
-		}
+		return $result->num_rows == 1;
 	} catch(Exception $e){
-		die("Could not get contentID by URL. <br/> Error: " . $conn->error);
+		die("Could not check if content-data exists. <br/> Error: " . $conn->error);
 	}
 }
