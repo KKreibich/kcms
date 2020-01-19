@@ -229,6 +229,6 @@ function createContent(
         $static,
         $showDate
     )){
-        return getContentDataByURL($url);
+        return getContentByURL($url);
     }
 }
