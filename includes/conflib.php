@@ -1,5 +1,5 @@
 <?php
-include($_SERVER["DOCUMENT_ROOT"]."/includes/dblib.php");
+require_once($_SERVER["DOCUMENT_ROOT"]."/includes/dblib.php");
 
 class configItem{
     private $config_name;
