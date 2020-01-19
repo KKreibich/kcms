@@ -76,6 +76,7 @@ class ContentItem
         bool $showdate
     ) {
         updateContentData($this->id, $url, $title, $subtitle, $content, $image, $created, $published, $static, $showdate);
+        $this->update();
     }
     /**
      * Removes the content from Database. Make sure not to use this object after doing this.
