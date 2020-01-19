@@ -80,7 +80,8 @@ class ContentItem
     /**
      * Removes the content from Database. Make sure not to use this object after doing this.
      */
-    public function delete(){
+    public function delete()
+    {
         removeContentData($this->id);
     }
 
@@ -88,7 +89,8 @@ class ContentItem
     /**
      * Updates the variables in this object
      */
-    public function update(){
+    public function update()
+    {
         $data = getContentDataByID($this->id);
         $this->url = $data["url"];
         $this->title = $data["title"];
@@ -100,34 +102,132 @@ class ContentItem
         $this->static = $data["static"];
         $this->showdate = $data["showdate"];
     }
-    public function getID(){
+    public function getID()
+    {
         return $this->id;
     }
-    public function getURL(){
+    public function getURL()
+    {
         return $this->url;
     }
-    public function getTitle(){
+    public function getTitle()
+    {
         return $this->title;
     }
-    public function getSubtitle(){
+    public function getSubtitle()
+    {
         return $this->subtitle;
     }
-    public function getContent(){
+    public function getContent()
+    {
         return $this->content;
     }
-    public function getImageID(){
+    public function getImageID()
+    {
         return $this->image;
     }
-    public function getCreatedTime(){
+    public function getCreatedTime()
+    {
         return $this->created;
     }
-    public function isStatic(){
+    public function isStatic()
+    {
         return $this->static;
     }
-    public function isPublished(){
+    public function isPublished()
+    {
         return $this->published;
     }
-    public function showDate(){
+    public function showDate()
+    {
         return $this->showdate;
+    }
+}
+/**
+ * Get ContentItem by ID
+ * @param int $id The ID of the content
+ * @return ContentItem returns the ContentItem, null if not existing
+ */
+function getContentByID(int $id)
+{
+    if (contentExistsByID($id)) {
+        $data = getContentDataByID($id);
+        return new ContentItem(
+            $id,
+            $data["url"],
+            $data["title"],
+            $data["subtitle"],
+            $data["content_html"],
+            $data["image"],
+            $data["created"],
+            $data["published"],
+            $data["static"],
+            $data["showdate"]
+        );
+    } else {
+        return null;
+    }
+}
+/**
+ * Get ContentItem by URL
+ * @param string $url The URL of the content
+ * @return ContentItem returns the ContentItem, null if not existing
+ */
+function getContentByURL(string $url)
+{
+    if (contentExistsByURL($url)) {
+        $data = getContentDataByURL($url);
+        return new ContentItem(
+            $data["id"],
+            $data["url"],
+            $data["title"],
+            $data["subtitle"],
+            $data["content_html"],
+            $data["image"],
+            $data["created"],
+            $data["published"],
+            $data["static"],
+            $data["showdate"]
+        );
+    } else {
+        return null;
+    }
+}
+/**
+ * Creates a new content
+ * @param string $url URL for the content
+ * @param string $title the title
+ * @param string $subtitle the subtitle
+ * @param string $content HTML-Formatted content
+ * @param int $image The mediaID for the image
+ * @param int $created timestamp when content was created
+ * @param bool $published public
+ * @param bool $static content is static page / not
+ * @param bool $showDate should the date be shown
+ * @return ContentItem Returns the created ContentItem
+ */
+function createContent(
+    string $url,
+    string $title,
+    string $subtitle,
+    string $content,
+    int $image,
+    int $created,
+    bool $published,
+    bool $static,
+    bool $showDate
+) {
+    if(addContentData(
+        $url,
+        $title,
+        $subtitle,
+        $content,
+        $image,
+        $created,
+        $published,
+        $static,
+        $showDate
+    )){
+        return getContentDataByURL($url);
     }
 }

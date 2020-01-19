@@ -690,7 +690,7 @@ function getContentDataByID(int $id)
  * @param string $url The URL to check
  * @return bool true if exists, false if not
  */
-function contentDataExists(string $url)
+function contentExistsByURL(string $url)
 {
 	global $conn;
 	global $tables;
@@ -698,6 +698,23 @@ function contentDataExists(string $url)
 	$q = "SELECT * FROM `" . $table . "` WHERE `url` = ?";
 	$stmt = $conn->prepare($q);
 	$stmt->bind_param("s", $url);
+	try {
+		$stmt->execute();
+		$result = $stmt->get_result();
+		$stmt->close();
+		return $result->num_rows == 1;
+	} catch (Exception $e) {
+		die("Could not check if content-data exists. <br/> Error: " . $conn->error);
+	}
+}
+function contentExistsByID(int $id)
+{
+	global $conn;
+	global $tables;
+	$table = $tables["content"];
+	$q = "SELECT * FROM `" . $table . "` WHERE `id` = ?";
+	$stmt = $conn->prepare($q);
+	$stmt->bind_param("i", $url);
 	try {
 		$stmt->execute();
 		$result = $stmt->get_result();
