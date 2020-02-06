@@ -707,6 +707,11 @@ function contentExistsByURL(string $url)
 		die("Could not check if content-data exists. <br/> Error: " . $conn->error);
 	}
 }
+/**
+ * Checks if content exists by ID
+ * @param int $id The ID to check
+ * @return bool true if exists, false if not
+ */
 function contentExistsByID(int $id)
 {
 	global $conn;
@@ -722,5 +727,41 @@ function contentExistsByID(int $id)
 		return $result->num_rows == 1;
 	} catch (Exception $e) {
 		die("Could not check if content-data exists. <br/> Error: " . $conn->error);
+	}
+}
+
+//! Functions for Media-Management
+
+function addMediaData(string $name, string $path, string $desc)
+{
+	global $conn;
+	global $tables;
+	$table = $tables["media"];
+	$q = "INSERT INTO `" . $table . "`(`name`,`path`,`desc`) VALUES (?,?,?)";
+	$stmt = $conn->prepare($q);
+	$stmt->bind_param("sss", $name, $path, $desc);
+	try {
+		$stmt->execute();
+		$stmt->close();
+		return true;
+	} catch (Exception $e) {
+		die("Could not update or insert Config-Data. <br/> Error: " . $conn->error);
+	}
+}
+
+function updateMediaData(int $id, string $name, string $path, string $desc)
+{
+	global $tables;
+	global $conn;
+	$table = $tables["media"];
+	$q = "UPDATE `" . $table . "` SET `name` = ?, `path` = ?, `desc` = ? WHERE `id` = ?";
+	$stmt = $conn->prepare($q);
+	$stmt->bind_param("isss", $id, $name, $path, $desc);
+	try {
+		$stmt->execute();
+		$stmt->close();
+		return true;
+	} catch (Exception $e) {
+		die("Could not update or insert Config-Data. <br/> Error: " . $conn->error);
 	}
 }
