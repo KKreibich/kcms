@@ -43,6 +43,7 @@ $createStatements["content"] = 'CREATE TABLE IF NOT EXISTS `' . $tables["content
 
 $createStatements["media"] = 'CREATE TABLE IF NOT EXISTS `' . $tables["media"] . '` (
 	`id` INT NOT NULL AUTO_INCREMENT,
+	`type` INT NOT NULL,
 	`name` VARCHAR(255) NOT NULL,
 	`path` TEXT NOT NULL,
 	`desc` TEXT NOT NULL,
@@ -731,37 +732,50 @@ function contentExistsByID(int $id)
 }
 
 //! Functions for Media-Management
-
-function addMediaData(string $name, string $path, string $desc)
+/**
+ * Adds the data for a media-object to the database
+ * @param string $name Name
+ * @param int $type ID for the Media-Type
+ * @param string $path Path to the media-file
+ * @param string $desc Description
+ */
+function addMediaData(string $name, int $type, string $path, string $desc)
 {
 	global $conn;
 	global $tables;
 	$table = $tables["media"];
-	$q = "INSERT INTO `" . $table . "`(`name`,`path`,`desc`) VALUES (?,?,?)";
+	$q = "INSERT INTO `" . $table . "`(`name`,`type`,`path`,`desc`) VALUES (?,?,?,?)";
 	$stmt = $conn->prepare($q);
-	$stmt->bind_param("sss", $name, $path, $desc);
+	$stmt->bind_param("siss", $name, $type, $path, $desc);
 	try {
 		$stmt->execute();
 		$stmt->close();
-		return true;
+		//TODO: Add return on success
 	} catch (Exception $e) {
-		die("Could not update or insert Config-Data. <br/> Error: " . $conn->error);
+		die("Could not insert Media-Data. <br/> Error: " . $conn->error);
 	}
 }
-
-function updateMediaData(int $id, string $name, string $path, string $desc)
+/**
+ * Updates the data for a media-object in the database
+ * @param int $id The ID of the object to update
+ * @param string $name Name
+ * @param int $type ID for the Media-Type
+ * @param string $path Path to the media-file
+ * @param string $desc Description
+ */
+function updateMediaData(int $id, string $name, int $type, string $path, string $desc)
 {
 	global $tables;
 	global $conn;
 	$table = $tables["media"];
 	$q = "UPDATE `" . $table . "` SET `name` = ?, `path` = ?, `desc` = ? WHERE `id` = ?";
 	$stmt = $conn->prepare($q);
-	$stmt->bind_param("isss", $id, $name, $path, $desc);
+	$stmt->bind_param("sissi", $name, $type, $path, $desc, $id);
 	try {
 		$stmt->execute();
 		$stmt->close();
-		return true;
+		//TODO: Add return on success
 	} catch (Exception $e) {
-		die("Could not update or insert Config-Data. <br/> Error: " . $conn->error);
+		die("Could not update Media-Data. <br/> Error: " . $conn->error);
 	}
 }
