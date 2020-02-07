@@ -788,7 +788,7 @@ function getMediaData(int $id){
 	global $tables;
 	global $conn;
 	$table = $tables["media"];
-	$q = "SELECT * FROM '". $table ."' WHERE `id` = ?";
+	$q = "SELECT * FROM `". $table ."` WHERE `id` = ?";
 	$stmt = $conn->prepare($q);
 	$stmt->bind_param("i", $id);
 	try{
@@ -814,7 +814,7 @@ function mediaDataExists(int $id){
 	global $tables;
 	global $conn;
 	$table = $tables["media"];
-	$q = "SELECT * FROM '". $table ."' WHERE `id` = ?";
+	$q = "SELECT * FROM `". $table ."` WHERE `id` = ?";
 	$stmt = $conn->prepare($q);
 	$stmt->bind_param("i", $id);
 	try{
