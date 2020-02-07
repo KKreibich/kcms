@@ -768,7 +768,7 @@ function updateMediaData(int $id, string $name, int $type, string $path, string 
 	global $tables;
 	global $conn;
 	$table = $tables["media"];
-	$q = "UPDATE `" . $table . "` SET `name` = ?, `path` = ?, `desc` = ? WHERE `id` = ?";
+	$q = "UPDATE `" . $table . "` SET `name` = ?, `type` = ?, `path` = ?, `desc` = ? WHERE `id` = ?";
 	$stmt = $conn->prepare($q);
 	$stmt->bind_param("sissi", $name, $type, $path, $desc, $id);
 	try {
