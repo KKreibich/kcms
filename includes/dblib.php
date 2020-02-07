@@ -779,3 +779,50 @@ function updateMediaData(int $id, string $name, int $type, string $path, string 
 		die("Could not update Media-Data. <br/> Error: " . $conn->error);
 	}
 }
+/**
+ * Fetches the data for a media-object from the database
+ * @param int $id The ID of the object
+ * @return array Array with data, returns null if not existing
+ */
+function getMediaData(int $id){
+	global $tables;
+	global $conn;
+	$table = $tables["media"];
+	$q = "SELECT * FROM '". $table ."' WHERE `id` = ?";
+	$stmt = $conn->prepare($q);
+	$stmt->bind_param("i", $id);
+	try{
+		$stmt->execute();
+		$result = $stmt->get_result();
+		if($result->num_rows != 1){
+			return null;
+		}
+		$data = $result->fetch_assoc();
+		return $data;
+
+	} catch (Exception $e){
+		die("Could not fetch Media-Data. <br/> Error: " . $conn->error);
+	}
+
+}
+/**
+ * Checks if media-object exists in Database
+ * @param int $id The ID to check
+ * @return bool exists / not
+ */
+function mediaDataExists(int $id){
+	global $tables;
+	global $conn;
+	$table = $tables["media"];
+	$q = "SELECT * FROM '". $table ."' WHERE `id` = ?";
+	$stmt = $conn->prepare($q);
+	$stmt->bind_param("i", $id);
+	try{
+		$stmt->execute();
+		$result = $stmt->get_result();
+		return $result->num_rows == 1;
+
+	} catch (Exception $e){
+		die("Could not fetch Media-Data. <br/> Error: " . $conn->error);
+	}
+}
