@@ -750,7 +750,6 @@ function addMediaData(string $name, int $type, string $path, string $desc)
 	try {
 		$stmt->execute();
 		$stmt->close();
-		//TODO: Add return on success
 	} catch (Exception $e) {
 		die("Could not insert Media-Data. <br/> Error: " . $conn->error);
 	}
@@ -774,7 +773,6 @@ function updateMediaData(int $id, string $name, int $type, string $path, string 
 	try {
 		$stmt->execute();
 		$stmt->close();
-		//TODO: Add return on success
 	} catch (Exception $e) {
 		die("Could not update Media-Data. <br/> Error: " . $conn->error);
 	}
@@ -798,6 +796,7 @@ function getMediaData(int $id){
 			return null;
 		}
 		$data = $result->fetch_assoc();
+		$stmt->close();
 		return $data;
 
 	} catch (Exception $e){
@@ -820,7 +819,27 @@ function mediaDataExists(int $id){
 	try{
 		$stmt->execute();
 		$result = $stmt->get_result();
+		$stmt->close();
 		return $result->num_rows == 1;
+
+	} catch (Exception $e){
+		die("Could not fetch Media-Data. <br/> Error: " . $conn->error);
+	}
+}
+/**
+ * Deletes the data for the media-object
+ * @param int $id the ID of the item to delete
+ */
+function deleteMediaData(int $id){
+	global $tables;
+	global $conn;
+	$table = $tables["media"];
+	$q = "DELETE FROM `". $table ."` WHERE `id` = ?";
+	$stmt = $conn->prepare($q);
+	$stmt->bind_param("i", $id);
+	try{
+		$stmt->execute();
+		$stmt->close();
 
 	} catch (Exception $e){
 		die("Could not fetch Media-Data. <br/> Error: " . $conn->error);
