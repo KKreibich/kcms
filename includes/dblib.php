@@ -855,7 +855,7 @@ function getAllMediaData()
 	global $tables;
 	global $conn;
 	$table = $tables["media"];
-	$q = "SELECT * FROM '" . $table . "'";
+	$q = "SELECT * FROM `" . $table . "`";
 	$result = $conn->query($q);
 	$datalist = array();
 	while ($confData = $result->fetch_assoc()) {
