@@ -1,5 +1,5 @@
 <h1>KCMS</h1>
-<p>With KCMS we want to create a simple content management system, which offers only the essential functions but is very open for creating themes and plugins.</p><p>
+<p>With KCMS we want to create a simple content management system, which offers only the essential functions but is very open for costumizing with themes and plugins.</p><p>
 At the moment we do not have a working version as we are still programming the fundamental system.</p>
 
 <h2>Help to develop</h2>
