@@ -126,7 +126,7 @@ function getAllConfigData()
 	global $tables;
 	global $conn;
 	$table = $tables["config"];
-	$q = "SELECT * FROM '" . $table . "'";
+	$q = "SELECT * FROM `" . $table . "`";
 	$result = $conn->query($q);
 	$datalist = array();
 	while ($confData = $result->fetch_assoc()) {
