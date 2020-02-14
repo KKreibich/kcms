@@ -845,3 +845,21 @@ function deleteMediaData(int $id){
 		die("Could not fetch Media-Data. <br/> Error: " . $conn->error);
 	}
 }
+
+/**
+ * Fetches all media-data from the database.
+ * @return array Array containing normal data-arrays
+ */
+function getAllMediaData()
+{
+	global $tables;
+	global $conn;
+	$table = $tables["media"];
+	$q = "SELECT * FROM '" . $table . "'";
+	$result = $conn->query($q);
+	$datalist = array();
+	while ($confData = $result->fetch_assoc()) {
+		array_push($datalist, $confData);
+	}
+	return $datalist;
+}

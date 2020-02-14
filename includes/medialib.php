@@ -62,11 +62,38 @@ class mediaItem
         updateMediaData($this->id, $name, $type, $path, $desc);
         $this->updateVars();
     }
-    function updateVars(){
+    public function updateVars(){
         $data = getMediaData($this->id);
         $this->name = $data["name"];
         $this->type = $data["type"];
         $this->path = $data["path"];
         $this->desc = $data["desc"];
     }
+}
+
+/**
+ * Gets a mediItem from the database
+ * @param int $id ID of the object
+ * @return mediaItem The item
+ */
+function getMedia(int $id){
+    $data = getMediaData($id);
+    if($data != null){
+        return new mediaItem($data["id"], $data["name"], $data["type"], $data["path"], $data["desc"]);
+    } else {
+        return null;
+    }
+}
+
+/**
+ * Gets all media-object from the database
+ * @return array Array with all mediaItems
+ */
+function getAllMedia(){
+    $dataArray = getAllMediaData();
+    $objArray = array();
+    foreach($dataArray as $data){
+        array_push($objArray, new mediaItem($data["id"], $data["name"], $data["type"], $data["path"], $data["path"]));
+    }
+    return $objArray;
 }
