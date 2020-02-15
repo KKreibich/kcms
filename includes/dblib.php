@@ -18,6 +18,7 @@ $tables["content"] = $dbconfig["prefix"] . "content";
 $tables["media"] = $dbconfig["prefix"] . "media";
 $tables["templates"] = $dbconfig["prefix"] . "templates";
 $tables["users"] = $dbconfig["prefix"] . "users";
+$tables["routes"] = $dbconfig["prefix"] . "routes";
 
 
 //Create statements
@@ -65,6 +66,18 @@ $createStatements["users"] = 'CREATE TABLE IF NOT EXISTS `' . $tables["users"] .
 	`email` VARCHAR(255) NOT NULL,
 	PRIMARY KEY (`id`,`name`)
 )';
+
+$createStatements["routes"] = 'CREATE TABLE IF NOT EXISTS `'. $tables["routes"] .'`(
+	`id` INT NOT NULL AUTO_INCREMENT,
+	`name` VARCHAR(255) NOT NULL,
+	`url` VARCHAR(255) NOT NULL,
+	`type` INT NOT NULL,
+	`0_code` INT,
+	`0_url` VARCHAR(255),
+	`1_pgname` VARCHAR(255),
+	PRIMARY KEY(`id`, `url`)
+)';
+
 //Query statemens
 foreach ($createStatements as $key => $statement) {
 	if (!$conn->query($statement)) {
@@ -863,3 +876,5 @@ function getAllMediaData()
 	}
 	return $datalist;
 }
+
+//! Functions for route-management
