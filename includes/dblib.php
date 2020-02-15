@@ -863,3 +863,56 @@ function getAllMediaData()
 	}
 	return $datalist;
 }
+
+//! Functions for template-management
+//INFO: Only for having a list of all templates,
+// all data will be read from the template-config.
+/**
+ * Adds data for a template to the database. 
+ * @param string $name Not user-readable name to identify folder of the template
+ */
+function addTemplateData(string $name){
+	global $tables;
+	global $conn;
+	$table = $tables["templates"];
+	$q = "INSERT INTO `". $table ."`(`name`) VALUES (?)";
+	$stmt = $conn->prepare($q);
+	$stmt->bind_param("s", $name);
+	try{
+		$stmt->execute();
+		$stmt->close();
+	} catch (Exception $e){
+		die("Error writing template-data to database.");
+	}
+}
+/**
+ * Checks if template exits by name
+ * @param string $name The name to check
+ * @return int If exists, returns ID, else returns null
+ */
+function templateExistsByName(string $name){
+
+}
+/**
+ * Checks if template exists by ID
+ * @param int $id The ID to check
+ * @return string If exists, returns name, else returns null
+ */
+function templateExistsByID(int $id){
+
+}
+/**
+ * Gets the data for a template
+ * @param int $id The ID of the template
+ * @return array Array with the data from the database
+ */
+function getTemplateData(int $id){
+
+}
+/**
+ * Gets all template-data from the database
+ * @return array Array with normal data-arrays for templats
+ */
+function getAllTemplateData(){
+
+}
