@@ -74,7 +74,7 @@ $createStatements["routes"] = 'CREATE TABLE IF NOT EXISTS `'. $tables["routes"] 
 	`type` INT NOT NULL,
 	`0_code` INT,
 	`0_url` VARCHAR(255),
-	`1_pgname` VARCHAR(255),
+	`1_pgid` VARCHAR(255),
 	PRIMARY KEY(`id`, `url`)
 )';
 
