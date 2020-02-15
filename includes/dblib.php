@@ -74,7 +74,7 @@ $createStatements["routes"] = 'CREATE TABLE IF NOT EXISTS `'. $tables["routes"] 
 	`type` INT NOT NULL,
 	`0_code` INT,
 	`0_url` VARCHAR(255),
-	`1_pgid` VARCHAR(255),
+	`1_pgid` INT,
 	PRIMARY KEY(`id`, `url`)
 )';
 
@@ -878,3 +878,26 @@ function getAllMediaData()
 }
 
 //! Functions for route-management
+/**
+ * Adds route-data to the database
+ * @param string $name The display-name in admin-panel
+ * @param string $url the url to route
+ * @param int $type the route-type (0 = Redirect, 1 = show page)
+ * @param int $z_code HTTP-Code to use for redirect, set null if type != 0
+ * @param string $z_url The URL to redirect to, set null if type != 0
+ * @param int $o_pgid The Page-ID of the page to show, set null if type != 1
+ */
+function addRouteData(string $name, string $url, int $type, int $z_code, string $z_url, int $o_pgid){
+	global $conn;
+	global $tables;
+	$table = $tables["routes"];
+	$q = "INSERT INTO `". $table ."`(`name`, `url`, `type`, `0_code`, `0_url`, `1_pgid`) VALUES (?,?,?,?,?,?)";
+	$stmt = $conn->prepare($q);
+	$stmt->bind_param("ssiisi", $name, $url, $type, $z_code, $z_url, $o_pgid);
+	try{
+		$stmt->execute();
+		$stmt->close();
+	} catch (Exception $e){
+		die("Could not add route-data.");
+	}
+}
