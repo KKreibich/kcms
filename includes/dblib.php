@@ -863,3 +863,133 @@ function getAllMediaData()
 	}
 	return $datalist;
 }
+
+//! Functions for template-management
+//INFO: Only for having a list of all templates,
+// all data will be read from the template-config.
+/**
+ * Adds data for a template to the database. 
+ * @param string $name Not user-readable name to identify folder of the template
+ */
+function addTemplateData(string $name){
+	global $tables;
+	global $conn;
+	$table = $tables["templates"];
+	$q = "INSERT INTO `". $table ."`(`name`) VALUES (?)";
+	$stmt = $conn->prepare($q);
+	$stmt->bind_param("s", $name);
+	try{
+		$stmt->execute();
+		$stmt->close();
+	} catch (Exception $e){
+		die("Error writing template-data to database.");
+	}
+}
+/**
+ * Checks if template exits by name
+ * @param string $name The name to check
+ * @return int If exists, returns ID, else returns null
+ */
+function templateExistsByName(string $name){
+	global $tables;
+	global $conn;
+	$table = $tables["templates"];
+	$q = "SELECT * FROM `" . $table . "` WHERE `name` = ?";
+	$stmt = $conn->prepare($q);
+	$stmt->bind_param("s", $name);
+	try{
+		$stmt->execute();
+		$result = $stmt->get_result();
+		$stmt->close();
+		return $result->num_rows == 1;
+	} catch (Exception $e){
+		die("Could not check if template exists by name.");
+	}
+}
+/**
+ * Checks if template exists by ID
+ * @param int $id The ID to check
+ * @return string If exists, returns name, else returns null
+ */
+function templateExistsByID(int $id){
+	global $tables;
+	global $conn;
+	$table = $tables["templates"];
+	$q = "SELECT * FROM `" . $table . "` WHERE `id` = ?";
+	$stmt = $conn->prepare($q);
+	$stmt->bind_param("i", $id);
+	try{
+		$stmt->execute();
+		$result = $stmt->get_result();
+		$stmt->close();
+		return $result->num_rows == 1;
+	} catch (Exception $e){
+		die("Could not check if template exists by ID.");
+	}
+}
+/**
+ * Gets the data for a template
+ * @param int $id The ID of the template
+ * @return array Array with the data from the database, nulll if not existing..
+ */
+function getTemplateData(int $id){
+	global $tables;
+	global $conn;
+	$table = $tables["templates"];
+	$q = "SELECT * FROM `" . $table . "` WHERE `id` = ?";
+	$stmt = $conn->prepare($q);
+	$stmt->bind_param("i", $id);
+	try{
+		$stmt->execute();
+		$result = $stmt->get_result();
+		$stmt->close();
+		if($result->num_rows == 1){
+			return $result->fetch_assoc();
+		}
+		return null;
+	} catch (Exception $e){
+		die("Could not check if template exists by ID.");
+	}
+}
+/**
+ * Gets all template-data from the database
+ * @return array Array with normal data-arrays for templats
+ */
+function getAllTemplateData(){
+	global $tables;
+	global $conn;
+	$table = $tables["templates"];
+	$q = "SELECT * FROM `".$table."`";
+	$stmt = $conn->prepare($q);
+	try{
+		$stmt->execute();
+		$result = $stmt->get_result();
+		$stmt->close();
+		$ret_list = array();
+		while($obj = $result->fetch_assoc()){
+			array_push($ret_list, $obj);
+		}
+		return $ret_list;
+	} catch (Exception $e){
+		die("Could not fetch all template-data.");
+	}
+}
+
+/**
+ * Deletes the data for a template from the DB
+ * @param int $id The ID of the object to delete
+ */
+function deleteTemplateData(int $id){
+	global $tables;
+	global $conn;
+	$table = $tables["templates"];
+	$q = "DELETE FROM `".$table."` WHERE `id` = ?";
+	$stmt = $conn->prepare($q);
+	$stmt->bind_param("i", $id);
+	try{
+		$stmt->execute();
+		$stmt->close();
+	} catch (Exception $e){
+		die("Could not delete template-data from database.");
+	}
+}
