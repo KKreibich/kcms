@@ -1,4 +1,5 @@
 <h1>KCMS</h1>
+<img src="https://raw.githubusercontent.com/KKreibich/kcms/logo-rebrand/kcms-logo.png"
 <p>With KCMS we want to create a simple content management system, which offers only the essential functions but is very open for costumizing with themes and plugins.</p><p>
 At the moment we do not have a working version as we are still programming the fundamental system.</p>
 
