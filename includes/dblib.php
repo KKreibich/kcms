@@ -1003,7 +1003,7 @@ function deleteTemplateData(int $id){
  * @param string $z_url The URL to redirect to, set null if type != 0
  * @param int $o_pgid The Page-ID of the page to show, set null if type != 1
  */
-function addRouteData(string $name, string $url, int $type, int $z_code, string $z_url, int $o_pgid){
+function addRouteData(string $name, string $url, int $type, ?int $z_code, ?string $z_url, ?int $o_pgid){
 	global $conn;
 	global $tables;
 	$table = $tables["routes"];
@@ -1122,7 +1122,7 @@ function getRouteData(int $id){
  * @param string $z_url The URL to redirect to, set null if type != 0
  * @param int $o_pgid The Page-ID of the page to show, set null if type != 1
  */
-function updateRouteData(int $id, string $name, string $url, int $type, int $z_code, string $z_url, int $o_pgid){
+function updateRouteData(int $id, string $name, string $url, int $type, ?int $z_code, ?string $z_url, ?int $o_pgid){
 	global $conn;
 	global $tables;
 	$table = $tables["routes"];
