@@ -18,6 +18,7 @@ $tables["content"] = $dbconfig["prefix"] . "content";
 $tables["media"] = $dbconfig["prefix"] . "media";
 $tables["templates"] = $dbconfig["prefix"] . "templates";
 $tables["users"] = $dbconfig["prefix"] . "users";
+$tables["routes"] = $dbconfig["prefix"] . "routes";
 
 
 //Create statements
@@ -65,6 +66,17 @@ $createStatements["users"] = 'CREATE TABLE IF NOT EXISTS `' . $tables["users"] .
 	`email` VARCHAR(255) NOT NULL,
 	PRIMARY KEY (`id`,`name`)
 )';
+
+$createStatements["routes"] = "CREATE TABLE IF NOT EXISTS `" . $tables["users"] . "` (
+	`id` INT NOT NULL AUTO_INCREMENT,
+	`name` VARCHAR(255) NOT NULL, 
+	`url` VARCHAR(255) NOT NULL, 
+	`type` INT NOT NULL, 
+	`0_code` INT, 
+	`0_url` VARCHAR(255), 
+	`1_pgid` INT,
+	PRIMARY KEY(`id`,`url`)
+)";
 //Query statemens
 foreach ($createStatements as $key => $statement) {
 	if (!$conn->query($statement)) {
@@ -1020,7 +1032,7 @@ function addRouteData(string $name, string $url, int $type, ?int $z_code, ?strin
 
 /**
  * Checks if route exists by id
- * @param int $id the id to check
+ * @param int $id the id1 to check
  * @return bool exists / not
  */
 function routeExistsByID(int $id){
