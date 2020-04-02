@@ -1063,6 +1063,9 @@ function routeExistsByURL(string $url){
 	$table = $tables["routes"];
 	$q = "SELECT * FROM `".$table."` WHERE `url` = ?";
 	$stmt = $conn->prepare($q);
+	if($stmt instanceof bool){
+		die("Error in mysql. " . $conn->error);
+	}
 	$stmt->bind_param("s", $url);
 	try{
 		$stmt->execute();
