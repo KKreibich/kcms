@@ -67,7 +67,7 @@ $createStatements["users"] = 'CREATE TABLE IF NOT EXISTS `' . $tables["users"] .
 	PRIMARY KEY (`id`,`name`)
 )';
 
-$createStatements["routes"] = "CREATE TABLE IF NOT EXISTS `" . $tables["users"] . "` (
+$createStatements["routes"] = "CREATE TABLE IF NOT EXISTS `" . $tables["routes"] . "` (
 	`id` INT NOT NULL AUTO_INCREMENT,
 	`name` VARCHAR(255) NOT NULL, 
 	`url` VARCHAR(255) NOT NULL, 
