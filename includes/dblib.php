@@ -1066,14 +1066,14 @@ function routeExistsByURL(string $url){
 	if($stmt instanceof bool){
 		die("Error in mysql. " . $conn->error);
 	}
-	$stmt->bind_param("s", $url);
 	try{
+		$stmt->bind_param("s", $url);
 		$stmt->execute();
 		$result = $stmt->get_result();
 		$stmt->close();
 		return $result->num_rows == 1;
 	} catch (Exception $e){
-		die("Could not check if route exists by ID.");
+		die("Could not check if route exists by ID. <br/>" . $conn->error);
 	}
 }
 
