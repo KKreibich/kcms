@@ -1142,8 +1142,7 @@ function updateRouteData(int $id, string $name, string $url, int $type, ?int $z_
 	global $tables;
 	$table = $tables["routes"];
 	$q = "UPDATE `". $table ."` SET 
-	`name` = ?, `url` = ?, `type` = ?, `0_code`, `0_url`, `1_pgid`
-	WHERE `id` = ?";
+	`name` = ?, `url` = ?, `type` = ?, `0_code` = ?, `0_url` = ?, `1_pgid` = ? WHERE `id` = ?";
 	$stmt = $conn->prepare($q);
 	$stmt->bind_param("ssiisii", $name, $url, $type, $z_code, $z_url, $o_pgid, $id);
 	try{
