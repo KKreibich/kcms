@@ -140,6 +140,9 @@ class HttpRoute{
     }
 }
 
+class HttpRouteManager{
+    //* Paused until objective DB-Management
+}
 
 /**
  * Thrown when given or requested variables are not matching the HttpRoute-Type.
