@@ -5,6 +5,8 @@ class DBConnector
 	private mysqli $conn;
 	private array $tables;
 	private $createStatements = array();
+
+	//* Init DB
 	function __construct()
 	{
 		//include configuration file
@@ -32,7 +34,7 @@ class DBConnector
 			`conf_name` VARCHAR(255) NOT NULL,
 			`conf_val` VARCHAR(255) NOT NULL,
 			PRIMARY KEY (`conf_name`))';
-		
+
 		$this->createStatements["content"] = 'CREATE TABLE IF NOT EXISTS `' . $tables["content"] . '` (
 			`id` INT NOT NULL AUTO_INCREMENT,
 			`url` VARCHAR(255) NOT NULL,
@@ -79,7 +81,8 @@ class DBConnector
 	/**
 	 * Queries all create-statements for the tables.
 	 */
-	private function initTables(){
+	private function initTables()
+	{
 		foreach ($this->createStatements as $key => $statement) {
 			if (!$this->conn->query($statement)) {
 				die("Could not create table: " . $key . ". Please contact an administrator. <br/> Error: " . $this->conn->error);
@@ -87,121 +90,113 @@ class DBConnector
 		}
 	}
 
-	//TODO Add functions for all tables.
-}
+	//! Functions for Data-Management
 
-//functions for config DB
-/**
- * Function Checks, if Config Exists in Database
- * @param string $conf_name name of the config entry
- * @return bool Config exists or not
- */
-function confExists(string $conf_name)
-{
-	global $tables;
-	global $conn;
-	$table = $tables["config"];
-	$q = "SELECT * FROM `" . $table . "` WHERE `conf_name` = ?";
-	$stmt = $conn->prepare($q);
-	$stmt->bind_param("s", $conf_name);
-	$stmt->execute();
-	$result = $stmt->get_result();
-	$stmt->close();
-	if ($result->num_rows == 1) {
-		return true;
-	} else {
-		return false;
-	}
-}
-/**
- * Gets Config-Data from the Database
- * @param string $conf_name name of the config entry
- * @return array Returns array with data, keys: "conf_name", "conf_val"
- */
-function getConfData(string $conf_name)
-{
-	global $tables;
-	global $conn;
-	$table = $tables["config"];
-	$q = "SELECT * FROM `" . $table . "` WHERE `conf_name` = ?";
-	$stmt = $conn->prepare($q);
-	$stmt->bind_param("s", $conf_name);
-	$result = $stmt->get_result();
-	$stmt->close();
-	if ($result->num_rows == 1) {
-		$data = $result->fetch_assoc();
-		return $data;
-	} else {
-		return null;
-	}
-}
-/**
- * Gets all config-data from the Database
- * @return array Returns array. Array contains arrays with config-data. keys: "conf_name", "conf_val"
- */
-function getAllConfigData()
-{
-	global $tables;
-	global $conn;
-	$table = $tables["config"];
-	$q = "SELECT * FROM `" . $table . "`";
-	$result = $conn->query($q);
-	$datalist = array();
-	while ($confData = $result->fetch_assoc()) {
-		array_push($datalist, $confData);
-	}
-	return $datalist;
-}
-/**
- * Sets config-value in the database
- * @param string $conf_name name of the config-entry
- * @param string $conf_data data that should be set
- * @return array returns the data as array. Keys: "conf_name", "conf_val"
- */
-function setConfigData(string $conf_name, string $conf_data)
-{
-	global $tables;
-	global $conn;
-	$table = $tables["config"];
-	if (confExists($conf_name)) {
-		$q = "UPDATE `" . $table . "` SET `conf_val` = ? WHERE `conf_name` = ?";
-		$stmt = $conn->prepare($q);
-		$stmt->bind_param("ss", $conf_name, $conf_name);
-	} else {
-		$q = "INSERT INTO `" . $table . "` (`conf_name`, `conf_val`) VALUES (?,?)";
-		$stmt = $conn->prepare($q);
-		$stmt->bind_param("ss", $conf_name, $conf_data);
-	}
-	try {
-		$stmt->execute();
-		$stmt->close();
-	} catch (Exception $e) {
-		die("Could not update or insert Config-Data. <br/> Error: " . $conn->error);
-	}
-}
-
-/**
- * Deletes config entry from Database
- * @param string $conf_name the name of the config entry
- * @return bool return true if config has been deleted
- */
-function removeConfigData(string $conf_name)
-{
-	global $tables;
-	global $conn;
-	$table = $tables["config"];
-	if (confExists($conf_name)) {
-		$q = "DELETE FROM `" . $table . "` WHERE `conf_name` = ?";
-		$stmt = $conn->prepare($q);
+	//* Config-DB
+	/**
+	 * Function Checks, if Config Exists in Database
+	 * @param string $conf_name name of the config entry
+	 * @return bool Config exists or not
+	 */
+	public function configExists(string $conf_name)
+	{
+		$table = $this->tables["config"];
+		$q = "SELECT * FROM `" . $table . "` WHERE `conf_name` = ?";
+		$stmt = $this->conn->prepare($q);
 		$stmt->bind_param("s", $conf_name);
+		$stmt->execute();
+		$result = $stmt->get_result();
+		$stmt->close();
+		if ($result->num_rows == 1) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	/**
+	 * Gets Config-Data from the Database
+	 * @param string $conf_name name of the config entry
+	 * @return array Returns array with data, keys: "conf_name", "conf_val"
+	 */
+	public function getConfigData(string $conf_name)
+	{
+		$table = $this->tables["config"];
+		$q = "SELECT * FROM `" . $table . "` WHERE `conf_name` = ?";
+		$stmt = $this->conn->prepare($q);
+		$stmt->bind_param("s", $conf_name);
+		$result = $stmt->get_result();
+		$stmt->close();
+		if ($result->num_rows == 1) {
+			$data = $result->fetch_assoc();
+			return $data;
+		} else {
+			return null;
+		}
+	}
+
+	/**
+	 * Gets all config-data from the Database
+	 * @return array Returns array. Array contains arrays with config-data. keys: "conf_name", "conf_val"
+	 */
+	function getAllConfigData()
+	{
+		$table = $this->tables["config"];
+		$q = "SELECT * FROM `" . $table . "`";
+		$result = $this->conn->query($q);
+		$datalist = array();
+		while ($confData = $result->fetch_assoc()) {
+			array_push($datalist, $confData);
+		}
+		return $datalist;
+	}
+
+	/**
+	 * Sets config-value in the database
+	 * @param string $conf_name name of the config-entry
+	 * @param string $conf_data data that should be set
+	 * @return array returns the data as array. Keys: "conf_name", "conf_val"
+	 */
+	function setConfigData(string $conf_name, string $conf_data)
+	{
+		$table = $this->tables["config"];
+		if ($this->configExists($conf_name)) {
+			$q = "UPDATE `" . $table . "` SET `conf_val` = ? WHERE `conf_name` = ?";
+			$stmt = $this->conn->prepare($q);
+			$stmt->bind_param("ss", $conf_name, $conf_name);
+		} else {
+			$q = "INSERT INTO `" . $table . "` (`conf_name`, `conf_val`) VALUES (?,?)";
+			$stmt = $this->conn->prepare($q);
+			$stmt->bind_param("ss", $conf_name, $conf_data);
+		}
 		try {
 			$stmt->execute();
 			$stmt->close();
 		} catch (Exception $e) {
-			die("Could not remove Config-Data. <br/> Error: " . $conn->error);
+			die("Could not update or insert Config-Data. <br/> Error: " . $this->conn->error);
 		}
 	}
-	return true;
+
+	/**
+	 * Deletes config entry from Database
+	 * @param string $conf_name the name of the config entry
+	 * @return bool return true if config has been deleted
+	 */
+	function removeConfigData(string $conf_name){
+		$table = $this->tables["config"];
+		if ($this->configExists($conf_name)) {
+			$q = "DELETE FROM `" . $table . "` WHERE `conf_name` = ?";
+			$stmt = $this->conn->prepare($q);
+			$stmt->bind_param("s", $conf_name);
+			try {
+				$stmt->execute();
+				$stmt->close();
+			} catch (Exception $e) {
+				die("Could not remove Config-Data. <br/> Error: " . $this->conn->error);
+			}
+		}
+		return true;
+	}
 }
 
 // Functions for User Data-Management
