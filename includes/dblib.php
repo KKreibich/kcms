@@ -1,87 +1,93 @@
 <?php
-//Include Config & Libs
-require_once($_SERVER["DOCUMENT_ROOT"] . "/config.php");
 
-//Connect to Database
-$conn = new mysqli(
-	$dbconfig["server"],
-	$dbconfig["username"],
-	$dbconfig["password"],
-	$dbconfig["database"]
-);
-$conn->set_charset("utf8_bin");
+class DBConnector
+{
+	private mysqli $conn;
+	private array $tables;
+	private $createStatements = array();
+	function __construct()
+	{
+		//include configuration file
+		require_once($_SERVER["DOCUMENT_ROOT"] . "/config.php");
+		//create connection & set charset
+		$this->conn = new mysqli(
+			$dbconfig["server"],
+			$dbconfig["username"],
+			$dbconfig["password"],
+			$dbconfig["database"]
+		);
+		//TODO Add connection error-handling
+		$this->conn->set_charset("utf8_bin");
 
-//Set table names
-$tables = array();
-$tables["config"] = $dbconfig["prefix"] . "conf";
-$tables["content"] = $dbconfig["prefix"] . "content";
-$tables["media"] = $dbconfig["prefix"] . "media";
-$tables["templates"] = $dbconfig["prefix"] . "templates";
-$tables["users"] = $dbconfig["prefix"] . "users";
-$tables["routes"] = $dbconfig["prefix"] . "routes";
+		//define table-names
+		$this->tables["config"] = $dbconfig["prefix"] . "conf";
+		$this->tables["content"] = $dbconfig["prefix"] . "content";
+		$this->tables["media"] = $dbconfig["prefix"] . "media";
+		$this->tables["templates"] = $dbconfig["prefix"] . "templates";
+		$this->tables["users"] = $dbconfig["prefix"] . "users";
+		$this->tables["routes"] = $dbconfig["prefix"] . "routes";
 
-
-//Create statements
-$createStatements = array();
-$createStatements["config"] = 'CREATE TABLE IF NOT EXISTS `' . $tables["config"] . '` (
-	`conf_name` VARCHAR(255) NOT NULL,
-	`conf_val` VARCHAR(255) NOT NULL,
-    PRIMARY KEY (`conf_name`))';
-
-$createStatements["content"] = 'CREATE TABLE IF NOT EXISTS `' . $tables["content"] . '` (
-	`id` INT NOT NULL AUTO_INCREMENT,
-	`url` VARCHAR(255) NOT NULL,
-	`title` TEXT NOT NULL,
-	`subtitle` TEXT NOT NULL,
-	`content_html` TEXT NOT NULL,
-	`image` INT NOT NULL,
-	`created` INT NOT NULL,
-	`published` TINYINT(2) NOT NULL,
-	`static` TINYINT(2) NOT NULL,
-	`showdate` TINYINT(2) NOT NULL,
-	PRIMARY KEY (`id`,`url`)
-)';
-
-$createStatements["media"] = 'CREATE TABLE IF NOT EXISTS `' . $tables["media"] . '` (
-	`id` INT NOT NULL AUTO_INCREMENT,
-	`type` INT NOT NULL,
-	`name` VARCHAR(255) NOT NULL,
-	`path` TEXT NOT NULL,
-	`desc` TEXT NOT NULL,
-	PRIMARY KEY (`id`)
-)';
-
-$createStatements["templates"] = 'CREATE TABLE IF NOT EXISTS `' . $tables["templates"] . '` (
-	`id` INT NOT NULL AUTO_INCREMENT,
-	`name` VARCHAR(255),
-	PRIMARY KEY (`id`)
-)';
-
-$createStatements["users"] = 'CREATE TABLE IF NOT EXISTS `' . $tables["users"] . '` (
-	`id` INT NOT NULL AUTO_INCREMENT,
-	`role` INT NOT NULL,
-	`name` VARCHAR(255) NOT NULL,
-	`pass_hash` TEXT NOT NULL,
-	`author_name` VARCHAR(255) NOT NULL,
-	`email` VARCHAR(255) NOT NULL,
-	PRIMARY KEY (`id`,`name`)
-)';
-
-$createStatements["routes"] = "CREATE TABLE IF NOT EXISTS `" . $tables["routes"] . "` (
-	`id` INT NOT NULL AUTO_INCREMENT,
-	`name` VARCHAR(255) NOT NULL, 
-	`url` VARCHAR(255) NOT NULL, 
-	`type` INT NOT NULL, 
-	`0_code` INT, 
-	`0_url` VARCHAR(255), 
-	`1_pgid` INT,
-	PRIMARY KEY(`id`,`url`)
-)";
-//Query statemens
-foreach ($createStatements as $key => $statement) {
-	if (!$conn->query($statement)) {
-		die("Could not create table: " . $key . ". Please contact an administrator. <br/> Error: " . $conn->error);
+		//define create statements
+		$this->createStatements["config"] = 'CREATE TABLE IF NOT EXISTS `' . $tables["config"] . '` (
+			`conf_name` VARCHAR(255) NOT NULL,
+			`conf_val` VARCHAR(255) NOT NULL,
+			PRIMARY KEY (`conf_name`))';
+		
+		$this->createStatements["content"] = 'CREATE TABLE IF NOT EXISTS `' . $tables["content"] . '` (
+			`id` INT NOT NULL AUTO_INCREMENT,
+			`url` VARCHAR(255) NOT NULL,
+			`title` TEXT NOT NULL,
+			`subtitle` TEXT NOT NULL,
+			`content_html` TEXT NOT NULL,
+			`image` INT NOT NULL,
+			`created` INT NOT NULL,
+			`published` TINYINT(2) NOT NULL,
+			`static` TINYINT(2) NOT NULL,
+			`showdate` TINYINT(2) NOT NULL,
+			PRIMARY KEY (`id`,`url`))';
+		$this->createStatements["media"] = 'CREATE TABLE IF NOT EXISTS `' . $tables["media"] . '` (
+			`id` INT NOT NULL AUTO_INCREMENT,
+			`type` INT NOT NULL,
+			`name` VARCHAR(255) NOT NULL,
+			`path` TEXT NOT NULL,
+			`desc` TEXT NOT NULL,
+			PRIMARY KEY (`id`))';
+		$this->createStatements["templates"] = 'CREATE TABLE IF NOT EXISTS `' . $tables["templates"] . '` (
+			`id` INT NOT NULL AUTO_INCREMENT,
+			`name` VARCHAR(255),
+			PRIMARY KEY (`id`))';
+		$this->createStatements["users"] = 'CREATE TABLE IF NOT EXISTS `' . $tables["users"] . '` (
+			`id` INT NOT NULL AUTO_INCREMENT,
+			`role` INT NOT NULL,
+			`name` VARCHAR(255) NOT NULL,
+			`pass_hash` TEXT NOT NULL,
+			`author_name` VARCHAR(255) NOT NULL,
+			`email` VARCHAR(255) NOT NULL,
+			PRIMARY KEY (`id`,`name`))';
+		$this->createStatements["routes"] = "CREATE TABLE IF NOT EXISTS `" . $tables["routes"] . "` (
+			`id` INT NOT NULL AUTO_INCREMENT,
+			`name` VARCHAR(255) NOT NULL, 
+			`url` VARCHAR(255) NOT NULL, 
+			`type` INT NOT NULL, 
+			`0_code` INT, 
+			`0_url` VARCHAR(255), 
+			`1_pgid` INT,
+			PRIMARY KEY(`id`,`url`))";
+		$this->initTables();
 	}
+
+	/**
+	 * Queries all create-statements for the tables.
+	 */
+	private function initTables(){
+		foreach ($this->createStatements as $key => $statement) {
+			if (!$this->conn->query($statement)) {
+				die("Could not create table: " . $key . ". Please contact an administrator. <br/> Error: " . $this->conn->error);
+			}
+		}
+	}
+
+	//TODO Add functions for all tables.
 }
 
 //functions for config DB
@@ -794,47 +800,46 @@ function updateMediaData(int $id, string $name, int $type, string $path, string 
  * @param int $id The ID of the object
  * @return array Array with data, returns null if not existing
  */
-function getMediaData(int $id){
+function getMediaData(int $id)
+{
 	global $tables;
 	global $conn;
 	$table = $tables["media"];
-	$q = "SELECT * FROM `". $table ."` WHERE `id` = ?";
+	$q = "SELECT * FROM `" . $table . "` WHERE `id` = ?";
 	$stmt = $conn->prepare($q);
 	$stmt->bind_param("i", $id);
-	try{
+	try {
 		$stmt->execute();
 		$result = $stmt->get_result();
-		if($result->num_rows != 1){
+		if ($result->num_rows != 1) {
 			return null;
 		}
 		$data = $result->fetch_assoc();
 		$stmt->close();
 		return $data;
-
-	} catch (Exception $e){
+	} catch (Exception $e) {
 		die("Could not fetch Media-Data. <br/> Error: " . $conn->error);
 	}
-
 }
 /**
  * Checks if media-object exists in Database
  * @param int $id The ID to check
  * @return bool exists / not
  */
-function mediaDataExists(int $id){
+function mediaDataExists(int $id)
+{
 	global $tables;
 	global $conn;
 	$table = $tables["media"];
-	$q = "SELECT * FROM `". $table ."` WHERE `id` = ?";
+	$q = "SELECT * FROM `" . $table . "` WHERE `id` = ?";
 	$stmt = $conn->prepare($q);
 	$stmt->bind_param("i", $id);
-	try{
+	try {
 		$stmt->execute();
 		$result = $stmt->get_result();
 		$stmt->close();
 		return $result->num_rows == 1;
-
-	} catch (Exception $e){
+	} catch (Exception $e) {
 		die("Could not fetch Media-Data. <br/> Error: " . $conn->error);
 	}
 }
@@ -842,18 +847,18 @@ function mediaDataExists(int $id){
  * Deletes the data for the media-object
  * @param int $id the ID of the item to delete
  */
-function deleteMediaData(int $id){
+function deleteMediaData(int $id)
+{
 	global $tables;
 	global $conn;
 	$table = $tables["media"];
-	$q = "DELETE FROM `". $table ."` WHERE `id` = ?";
+	$q = "DELETE FROM `" . $table . "` WHERE `id` = ?";
 	$stmt = $conn->prepare($q);
 	$stmt->bind_param("i", $id);
-	try{
+	try {
 		$stmt->execute();
 		$stmt->close();
-
-	} catch (Exception $e){
+	} catch (Exception $e) {
 		die("Could not fetch Media-Data. <br/> Error: " . $conn->error);
 	}
 }
@@ -883,17 +888,18 @@ function getAllMediaData()
  * Adds data for a template to the database. 
  * @param string $name Not user-readable name to identify folder of the template
  */
-function addTemplateData(string $name){
+function addTemplateData(string $name)
+{
 	global $tables;
 	global $conn;
 	$table = $tables["templates"];
-	$q = "INSERT INTO `". $table ."`(`name`) VALUES (?)";
+	$q = "INSERT INTO `" . $table . "`(`name`) VALUES (?)";
 	$stmt = $conn->prepare($q);
 	$stmt->bind_param("s", $name);
-	try{
+	try {
 		$stmt->execute();
 		$stmt->close();
-	} catch (Exception $e){
+	} catch (Exception $e) {
 		die("Error writing template-data to database.");
 	}
 }
@@ -902,19 +908,20 @@ function addTemplateData(string $name){
  * @param string $name The name to check
  * @return int If exists, returns ID, else returns null
  */
-function templateExistsByName(string $name){
+function templateExistsByName(string $name)
+{
 	global $tables;
 	global $conn;
 	$table = $tables["templates"];
 	$q = "SELECT * FROM `" . $table . "` WHERE `name` = ?";
 	$stmt = $conn->prepare($q);
 	$stmt->bind_param("s", $name);
-	try{
+	try {
 		$stmt->execute();
 		$result = $stmt->get_result();
 		$stmt->close();
 		return $result->num_rows == 1;
-	} catch (Exception $e){
+	} catch (Exception $e) {
 		die("Could not check if template exists by name.");
 	}
 }
@@ -923,19 +930,20 @@ function templateExistsByName(string $name){
  * @param int $id The ID to check
  * @return string If exists, returns name, else returns null
  */
-function templateExistsByID(int $id){
+function templateExistsByID(int $id)
+{
 	global $tables;
 	global $conn;
 	$table = $tables["templates"];
 	$q = "SELECT * FROM `" . $table . "` WHERE `id` = ?";
 	$stmt = $conn->prepare($q);
 	$stmt->bind_param("i", $id);
-	try{
+	try {
 		$stmt->execute();
 		$result = $stmt->get_result();
 		$stmt->close();
 		return $result->num_rows == 1;
-	} catch (Exception $e){
+	} catch (Exception $e) {
 		die("Could not check if template exists by ID.");
 	}
 }
@@ -944,22 +952,23 @@ function templateExistsByID(int $id){
  * @param int $id The ID of the template
  * @return array Array with the data from the database, nulll if not existing..
  */
-function getTemplateData(int $id){
+function getTemplateData(int $id)
+{
 	global $tables;
 	global $conn;
 	$table = $tables["templates"];
 	$q = "SELECT * FROM `" . $table . "` WHERE `id` = ?";
 	$stmt = $conn->prepare($q);
 	$stmt->bind_param("i", $id);
-	try{
+	try {
 		$stmt->execute();
 		$result = $stmt->get_result();
 		$stmt->close();
-		if($result->num_rows == 1){
+		if ($result->num_rows == 1) {
 			return $result->fetch_assoc();
 		}
 		return null;
-	} catch (Exception $e){
+	} catch (Exception $e) {
 		die("Could not check if template exists by ID.");
 	}
 }
@@ -967,22 +976,23 @@ function getTemplateData(int $id){
  * Gets all template-data from the database
  * @return array Array with normal data-arrays for templats
  */
-function getAllTemplateData(){
+function getAllTemplateData()
+{
 	global $tables;
 	global $conn;
 	$table = $tables["templates"];
-	$q = "SELECT * FROM `".$table."`";
+	$q = "SELECT * FROM `" . $table . "`";
 	$stmt = $conn->prepare($q);
-	try{
+	try {
 		$stmt->execute();
 		$result = $stmt->get_result();
 		$stmt->close();
 		$ret_list = array();
-		while($obj = $result->fetch_assoc()){
+		while ($obj = $result->fetch_assoc()) {
 			array_push($ret_list, $obj);
 		}
 		return $ret_list;
-	} catch (Exception $e){
+	} catch (Exception $e) {
 		die("Could not fetch all template-data.");
 	}
 }
@@ -991,17 +1001,18 @@ function getAllTemplateData(){
  * Deletes the data for a template from the DB
  * @param int $id The ID of the object to delete
  */
-function deleteTemplateData(int $id){
+function deleteTemplateData(int $id)
+{
 	global $tables;
 	global $conn;
 	$table = $tables["templates"];
-	$q = "DELETE FROM `".$table."` WHERE `id` = ?";
+	$q = "DELETE FROM `" . $table . "` WHERE `id` = ?";
 	$stmt = $conn->prepare($q);
 	$stmt->bind_param("i", $id);
-	try{
+	try {
 		$stmt->execute();
 		$stmt->close();
-	} catch (Exception $e){
+	} catch (Exception $e) {
 		die("Could not delete template-data from database.");
 	}
 }
@@ -1015,17 +1026,18 @@ function deleteTemplateData(int $id){
  * @param string $z_url The URL to redirect to, set null if type != 0
  * @param int $o_pgid The Page-ID of the page to show, set null if type != 1
  */
-function addRouteData(string $name, string $url, int $type, ?int $z_code, ?string $z_url, ?int $o_pgid){
+function addRouteData(string $name, string $url, int $type, ?int $z_code, ?string $z_url, ?int $o_pgid)
+{
 	global $conn;
 	global $tables;
 	$table = $tables["routes"];
-	$q = "INSERT INTO `". $table ."`(`name`, `url`, `type`, `0_code`, `0_url`, `1_pgid`) VALUES (?,?,?,?,?,?)";
+	$q = "INSERT INTO `" . $table . "`(`name`, `url`, `type`, `0_code`, `0_url`, `1_pgid`) VALUES (?,?,?,?,?,?)";
 	$stmt = $conn->prepare($q);
 	$stmt->bind_param("ssiisi", $name, $url, $type, $z_code, $z_url, $o_pgid);
-	try{
+	try {
 		$stmt->execute();
 		$stmt->close();
-	} catch (Exception $e){
+	} catch (Exception $e) {
 		die("Could not add route-data.");
 	}
 }
@@ -1035,19 +1047,20 @@ function addRouteData(string $name, string $url, int $type, ?int $z_code, ?strin
  * @param int $id the id1 to check
  * @return bool exists / not
  */
-function routeExistsByID(int $id){
+function routeExistsByID(int $id)
+{
 	global $conn;
 	global $tables;
 	$table = $tables["routes"];
-	$q = "SELECT * FROM `".$table."` WHERE `id` = ?";
+	$q = "SELECT * FROM `" . $table . "` WHERE `id` = ?";
 	$stmt = $conn->prepare($q);
 	$stmt->bind_param("i", $id);
-	try{
+	try {
 		$stmt->execute();
 		$result = $stmt->get_result();
 		$stmt->close();
 		return $result->num_rows == 1;
-	} catch (Exception $e){
+	} catch (Exception $e) {
 		die("Could not check if route exists by ID.");
 	}
 }
@@ -1057,22 +1070,23 @@ function routeExistsByID(int $id){
  * @param string $url the url to check
  * @return bool exists / not
  */
-function routeExistsByURL(string $url){
+function routeExistsByURL(string $url)
+{
 	global $conn;
 	global $tables;
 	$table = $tables["routes"];
-	$q = "SELECT * FROM `".$table."` WHERE `url` = ?";
+	$q = "SELECT * FROM `" . $table . "` WHERE `url` = ?";
 	$stmt = $conn->prepare($q);
-	if($stmt instanceof bool){
+	if ($stmt instanceof bool) {
 		die("Error in mysql. " . $conn->error);
 	}
-	try{
+	try {
 		$stmt->bind_param("s", $url);
 		$stmt->execute();
 		$result = $stmt->get_result();
 		$stmt->close();
 		return $result->num_rows == 1;
-	} catch (Exception $e){
+	} catch (Exception $e) {
 		die("Could not check if route exists by ID. <br/>" . $conn->error);
 	}
 }
@@ -1082,22 +1096,23 @@ function routeExistsByURL(string $url){
  * @param string $url 
  * @return int the ID, null if not existing
  */
-function getRouteID(string $url){
+function getRouteID(string $url)
+{
 	global $conn;
 	global $tables;
 	$table = $tables["routes"];
-	$q = "SELECT * FROM `".$table."` WHERE `url` = ?";
+	$q = "SELECT * FROM `" . $table . "` WHERE `url` = ?";
 	$stmt = $conn->prepare($q);
 	$stmt->bind_param("s", $url);
-	try{
+	try {
 		$stmt->execute();
 		$result = $stmt->get_result();
 		$stmt->close();
-		if($result->num_rows != 1){
+		if ($result->num_rows != 1) {
 			return null;
 		}
 		return $result->fetch_assoc()["id"];
-	} catch (Exception $e){
+	} catch (Exception $e) {
 		die("Could not get route-ID.");
 	}
 }
@@ -1107,22 +1122,23 @@ function getRouteID(string $url){
  * @param int $id the id of the route
  * @return array Array with the route-data
  */
-function getRouteData(int $id){
+function getRouteData(int $id)
+{
 	global $conn;
 	global $tables;
 	$table = $tables["routes"];
-	$q = "SELECT * FROM `".$table."` WHERE `id` = ?";
+	$q = "SELECT * FROM `" . $table . "` WHERE `id` = ?";
 	$stmt = $conn->prepare($q);
 	$stmt->bind_param("i", $id);
-	try{
+	try {
 		$stmt->execute();
 		$result = $stmt->get_result();
 		$stmt->close();
-		if($result->num_rows != 1){
+		if ($result->num_rows != 1) {
 			return null;
 		}
 		return $result->fetch_assoc();
-	} catch (Exception $e){
+	} catch (Exception $e) {
 		die("Could not get route-data.");
 	}
 }
@@ -1137,18 +1153,19 @@ function getRouteData(int $id){
  * @param string $z_url The URL to redirect to, set null if type != 0
  * @param int $o_pgid The Page-ID of the page to show, set null if type != 1
  */
-function updateRouteData(int $id, string $name, string $url, int $type, ?int $z_code, ?string $z_url, ?int $o_pgid){
+function updateRouteData(int $id, string $name, string $url, int $type, ?int $z_code, ?string $z_url, ?int $o_pgid)
+{
 	global $conn;
 	global $tables;
 	$table = $tables["routes"];
-	$q = "UPDATE `". $table ."` SET 
+	$q = "UPDATE `" . $table . "` SET 
 	`name` = ?, `url` = ?, `type` = ?, `0_code` = ?, `0_url` = ?, `1_pgid` = ? WHERE `id` = ?";
 	$stmt = $conn->prepare($q);
 	$stmt->bind_param("ssiisii", $name, $url, $type, $z_code, $z_url, $o_pgid, $id);
-	try{
+	try {
 		$stmt->execute();
 		$stmt->close();
-	} catch (Exception $e){
+	} catch (Exception $e) {
 		die("Could not update route-data.");
 	}
 }
@@ -1157,17 +1174,18 @@ function updateRouteData(int $id, string $name, string $url, int $type, ?int $z_
  * Deletes the data for a route
  * @param int $id The ID of the route to delete
  */
-function deleteRouteData(int $id){
+function deleteRouteData(int $id)
+{
 	global $conn;
 	global $tables;
 	$table = $tables["routes"];
-	$q = "DELETE FROM `". $table ."` WHERE `id` = ?";
+	$q = "DELETE FROM `" . $table . "` WHERE `id` = ?";
 	$stmt = $conn->prepare($q);
-	$stmt->bind_param("i",$id);
-	try{
+	$stmt->bind_param("i", $id);
+	try {
 		$stmt->execute();
 		$stmt->close();
-	} catch (Exception $e){
+	} catch (Exception $e) {
 		die("Could not update route-data.");
 	}
 }
