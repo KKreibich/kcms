@@ -2,6 +2,7 @@
 // KCMS Configuration File
 // Includes DB-Configuration
 
+//! LOCAL TEST CONFIG - REMOVE BEFORE MERGE!!!!!!!!!!!!!
 $dbconfig = [
     "server" => "localhost",
     "username" => "DEFAULT",
