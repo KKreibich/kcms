@@ -139,7 +139,7 @@ class DBConnector
 	 * Gets all config-data from the Database
 	 * @return array Returns array. Array contains arrays with config-data. keys: "conf_name", "conf_val"
 	 */
-	function getAllConfigData()
+	public function getAllConfigData()
 	{
 		$table = $this->tables["config"];
 		$q = "SELECT * FROM `" . $table . "`";
@@ -157,7 +157,7 @@ class DBConnector
 	 * @param string $conf_data data that should be set
 	 * @return array returns the data as array. Keys: "conf_name", "conf_val"
 	 */
-	function setConfigData(string $conf_name, string $conf_data)
+	public function setConfigData(string $conf_name, string $conf_data)
 	{
 		$table = $this->tables["config"];
 		if ($this->configExists($conf_name)) {
@@ -182,7 +182,7 @@ class DBConnector
 	 * @param string $conf_name the name of the config entry
 	 * @return bool return true if config has been deleted
 	 */
-	function deleteConfigData(string $conf_name)
+	public function deleteConfigData(string $conf_name)
 	{
 		$table = $this->tables["config"];
 		if ($this->configExists($conf_name)) {
@@ -205,7 +205,7 @@ class DBConnector
 	 * @param int $id The ID of the User
 	 * @return bool true if users exists, false if not
 	 */
-	function userExists(int $id)
+	public function userExists(int $id)
 	{
 		$table = $this->tables["users"];
 		$q = "SELECT * FROM `" . $table . "` WHERE `id` = ?";
@@ -230,7 +230,7 @@ class DBConnector
 	 * @param string $name The name of the user
 	 * @return int returns the ID, null if user doesn't exist
 	 */
-	function getUserID(string $name)
+	public function getUserID(string $name)
 	{
 		$table = $this->tables["users"];
 		$q = "SELECT * FROM `" . $table . "` WHERE `name` = ?";
@@ -256,7 +256,7 @@ class DBConnector
 	 * @param int $id The ID of the user
 	 * @return array returns array with data from database or null, if user doesn't exist
 	 */
-	function getUserData(int $id)
+	public function getUserData(int $id)
 	{
 		$table = $this->tables["users"];
 		$q = "SELECT * FROM `" . $table . "` WHERE `id` = ?";
@@ -281,7 +281,7 @@ class DBConnector
 	 * Gets Data for all Users from the Database
 	 * @return array Array with normal user-data arrays
 	 */
-	function getAllUserData()
+	public function getAllUserData()
 	{
 		$table = $this->tables["users"];
 		$q = "SELECT * FROM `" . $table . "`";
@@ -303,7 +303,7 @@ class DBConnector
 	 * @param string $email the new e-mail adress
 	 * @return array returns the data, that has been written to the DB
 	 */
-	function updateUserData(int $id, int $role, string $name, string $pass_hash, string $author_name, string $email)
+	public function updateUserData(int $id, int $role, string $name, string $pass_hash, string $author_name, string $email)
 	{
 		$table = $this->tables["users"];
 		if ($this->userExists($id)) {
@@ -331,7 +331,7 @@ class DBConnector
 	 * @param string $email the users e-mail adress
 	 * @return array the data that has been written to the DB
 	 */
-	function addUserData(int $role, string $name, string $pass_hash, string $author_name, string $email)
+	public function addUserData(int $role, string $name, string $pass_hash, string $author_name, string $email)
 	{
 		$table = $this->tables["users"];
 		if ($this->getUserID($name) == null) {
@@ -355,7 +355,7 @@ class DBConnector
 	 * @param int $id The ID of the user
 	 * @return bool returns true if user has been deleted
 	 */
-	function removeUserData(int $id)
+	public function removeUserData(int $id)
 	{
 		$table = $this->tables["users"];
 		$q = "DELETE FROM `" . $table . "` WHERE `id` = ?";
@@ -376,7 +376,7 @@ class DBConnector
 	 * @param int $id The Id of the content
 	 * @return array array with the content data
 	 */
-	function getContentData(int $id)
+	public function getContentData(int $id)
 	{
 		$table = $this->tables["content"];
 		$q = "SELECT * FROM `" . $table . "` WHERE `id` = ?";
@@ -415,7 +415,7 @@ class DBConnector
 	 * Gets the data for all content in DB
 	 * @return array array containing the normal content-arrays
 	 */
-	function getAllContentData()
+	public function getAllContentData()
 	{
 		$table = $this->tables["content"];
 		$q = "SELECT * FROM `" . $table . "`";
@@ -463,7 +463,7 @@ class DBConnector
 	 * @param bool $static static
 	 * @param bool $showdate show date
 	 */
-	function addContentData(
+	public function addContentData(
 		string $url,
 		string $title,
 		string $subtitle,
@@ -529,7 +529,7 @@ class DBConnector
 	 * @param bool $static static
 	 * @param bool $showdate show date
 	 */
-	function updateContentData(
+	public function updateContentData(
 		int $id,
 		string $url,
 		string $title,
@@ -589,7 +589,7 @@ class DBConnector
 	 * Removes the data of a content object from the Database
 	 * @param string $id The ID of the content object
 	 */
-	function removeContentData(int $id)
+	public function removeContentData(int $id)
 	{
 		$table = $this->tables["content"];
 		$q = "DELETE FROM `" . $table . "` WHERE `id` = ?";
@@ -609,7 +609,7 @@ class DBConnector
 	 * @param int $id The ID to check
 	 * @return bool true if exists, false if not
 	 */
-	function contentExists(int $id)
+	public function contentExists(int $id)
 	{
 		$table = $this->tables["content"];
 		$q = "SELECT * FROM `" . $table . "` WHERE `id` = ?";
@@ -633,7 +633,7 @@ class DBConnector
 	 * @param string $path Path to the media-file
 	 * @param string $desc Description
 	 */
-	function addMediaData(string $name, int $type, string $path, string $desc)
+	public function addMediaData(string $name, int $type, string $path, string $desc)
 	{
 		$table = $this->tables["media"];
 		$q = "INSERT INTO `" . $table . "`(`name`,`type`,`path`,`desc`) VALUES (?,?,?,?)";
@@ -655,7 +655,7 @@ class DBConnector
 	 * @param string $path Path to the media-file
 	 * @param string $desc Description
 	 */
-	function updateMediaData(int $id, string $name, int $type, string $path, string $desc)
+	public function updateMediaData(int $id, string $name, int $type, string $path, string $desc)
 	{
 		$table = $this->tables["media"];
 		$q = "UPDATE `" . $table . "` SET `name` = ?, `type` = ?, `path` = ?, `desc` = ? WHERE `id` = ?";
@@ -674,7 +674,7 @@ class DBConnector
 	 * @param int $id The ID of the object
 	 * @return array Array with data, returns null if not existing
 	 */
-	function getMediaData(int $id)
+	public function getMediaData(int $id)
 	{
 		$table = $this->tables["media"];
 		$q = "SELECT * FROM `" . $table . "` WHERE `id` = ?";
@@ -699,7 +699,7 @@ class DBConnector
 	 * @param int $id The ID to check
 	 * @return bool exists / not
 	 */
-	function mediaDataExists(int $id)
+	public function mediaDataExists(int $id)
 	{
 		$table = $this->tables["media"];
 		$q = "SELECT * FROM `" . $table . "` WHERE `id` = ?";
@@ -719,7 +719,7 @@ class DBConnector
 	 * Deletes the data for the media-object
 	 * @param int $id the ID of the item to delete
 	 */
-	function deleteMediaData(int $id)
+	public function deleteMediaData(int $id)
 	{
 		$table = $this->tables["media"];
 		$q = "DELETE FROM `" . $table . "` WHERE `id` = ?";
@@ -737,7 +737,7 @@ class DBConnector
 	 * Fetches all media-data from the database.
 	 * @return array Array containing normal data-arrays
 	 */
-	function getAllMediaData()
+	public function getAllMediaData()
 	{
 		$table = $this->tables["media"];
 		$q = "SELECT * FROM `" . $table . "`";
@@ -748,151 +748,143 @@ class DBConnector
 		}
 		return $datalist;
 	}
-}
 
-
-
-
-
-
-
-
-
-//! Functions for template-management
-//INFO: Only for having a list of all templates,
-// all data will be read from the template-config.
-/**
- * Adds data for a template to the database. 
- * @param string $name Not user-readable name to identify folder of the template
- */
-function addTemplateData(string $name)
-{
-	global $tables;
-	global $conn;
-	$table = $tables["templates"];
-	$q = "INSERT INTO `" . $table . "`(`name`) VALUES (?)";
-	$stmt = $conn->prepare($q);
-	$stmt->bind_param("s", $name);
-	try {
-		$stmt->execute();
-		$stmt->close();
-	} catch (Exception $e) {
-		die("Error writing template-data to database.");
-	}
-}
-/**
- * Checks if template exits by name
- * @param string $name The name to check
- * @return int If exists, returns ID, else returns null
- */
-function templateExistsByName(string $name)
-{
-	global $tables;
-	global $conn;
-	$table = $tables["templates"];
-	$q = "SELECT * FROM `" . $table . "` WHERE `name` = ?";
-	$stmt = $conn->prepare($q);
-	$stmt->bind_param("s", $name);
-	try {
-		$stmt->execute();
-		$result = $stmt->get_result();
-		$stmt->close();
-		return $result->num_rows == 1;
-	} catch (Exception $e) {
-		die("Could not check if template exists by name.");
-	}
-}
-/**
- * Checks if template exists by ID
- * @param int $id The ID to check
- * @return string If exists, returns name, else returns null
- */
-function templateExistsByID(int $id)
-{
-	global $tables;
-	global $conn;
-	$table = $tables["templates"];
-	$q = "SELECT * FROM `" . $table . "` WHERE `id` = ?";
-	$stmt = $conn->prepare($q);
-	$stmt->bind_param("i", $id);
-	try {
-		$stmt->execute();
-		$result = $stmt->get_result();
-		$stmt->close();
-		return $result->num_rows == 1;
-	} catch (Exception $e) {
-		die("Could not check if template exists by ID.");
-	}
-}
-/**
- * Gets the data for a template
- * @param int $id The ID of the template
- * @return array Array with the data from the database, nulll if not existing..
- */
-function getTemplateData(int $id)
-{
-	global $tables;
-	global $conn;
-	$table = $tables["templates"];
-	$q = "SELECT * FROM `" . $table . "` WHERE `id` = ?";
-	$stmt = $conn->prepare($q);
-	$stmt->bind_param("i", $id);
-	try {
-		$stmt->execute();
-		$result = $stmt->get_result();
-		$stmt->close();
-		if ($result->num_rows == 1) {
-			return $result->fetch_assoc();
+	//* Template-DB
+	/**
+	 * Adds data for a template to the database. 
+	 * @param string $name Not user-readable name to identify folder of the template
+	 */
+	public function addTemplateData(string $name)
+	{
+		$table = $this->tables["templates"];
+		$q = "INSERT INTO `" . $table . "`(`name`) VALUES (?)";
+		$stmt = $this->conn->prepare($q);
+		$stmt->bind_param("s", $name);
+		try {
+			$stmt->execute();
+			$stmt->close();
+		} catch (Exception $e) {
+			die("Error writing template-data to database.");
 		}
-		return null;
-	} catch (Exception $e) {
-		die("Could not check if template exists by ID.");
 	}
-}
-/**
- * Gets all template-data from the database
- * @return array Array with normal data-arrays for templats
- */
-function getAllTemplateData()
-{
-	global $tables;
-	global $conn;
-	$table = $tables["templates"];
-	$q = "SELECT * FROM `" . $table . "`";
-	$stmt = $conn->prepare($q);
-	try {
-		$stmt->execute();
-		$result = $stmt->get_result();
-		$stmt->close();
-		$ret_list = array();
-		while ($obj = $result->fetch_assoc()) {
-			array_push($ret_list, $obj);
+
+	/**
+	 * Checks if template exits by name
+	 * @param string $name The name to check
+	 * @return int If exists, returns ID, else returns null
+	 */
+	public function templateExistsByName(string $name)
+	{
+		$table = $this->tables["templates"];
+		$q = "SELECT * FROM `" . $table . "` WHERE `name` = ?";
+		$stmt = $this->conn->prepare($q);
+		$stmt->bind_param("s", $name);
+		try {
+			$stmt->execute();
+			$result = $stmt->get_result();
+			$stmt->close();
+			return $result->num_rows == 1;
+		} catch (Exception $e) {
+			die("Could not check if template exists by name.");
 		}
-		return $ret_list;
-	} catch (Exception $e) {
-		die("Could not fetch all template-data.");
+	}
+
+	/**
+	 * Checks if template exists by ID
+	 * @param int $id The ID to check
+	 * @return string If exists, returns name, else returns null
+	 */
+	function templateExistsByID(int $id)
+	{
+		$table = $this->tables["templates"];
+		$q = "SELECT * FROM `" . $table . "` WHERE `id` = ?";
+		$stmt = $this->conn->prepare($q);
+		$stmt->bind_param("i", $id);
+		try {
+			$stmt->execute();
+			$result = $stmt->get_result();
+			$stmt->close();
+			return $result->num_rows == 1;
+		} catch (Exception $e) {
+			die("Could not check if template exists by ID.");
+		}
+	}
+
+	/**
+	 * Gets the data for a template
+	 * @param int $id The ID of the template
+	 * @return array Array with the data from the database, nulll if not existing..
+	 */
+	function getTemplateData(int $id)
+	{
+		$table = $this->tables["templates"];
+		$q = "SELECT * FROM `" . $table . "` WHERE `id` = ?";
+		$stmt = $this->conn->prepare($q);
+		$stmt->bind_param("i", $id);
+		try {
+			$stmt->execute();
+			$result = $stmt->get_result();
+			$stmt->close();
+			if ($result->num_rows == 1) {
+				return $result->fetch_assoc();
+			}
+			return null;
+		} catch (Exception $e) {
+			die("Could not check if template exists by ID.");
+		}
+	}
+
+	/**
+	 * Gets all template-data from the database
+	 * @return array Array with normal data-arrays for templats
+	 */
+	function getAllTemplateData()
+	{
+		$table = $this->tables["templates"];
+		$q = "SELECT * FROM `" . $table . "`";
+		$stmt = $this->conn->prepare($q);
+		try {
+			$stmt->execute();
+			$result = $stmt->get_result();
+			$stmt->close();
+			$ret_list = array();
+			while ($obj = $result->fetch_assoc()) {
+				array_push($ret_list, $obj);
+			}
+			return $ret_list;
+		} catch (Exception $e) {
+			die("Could not fetch all template-data.");
+		}
+	}
+
+	/**
+	 * Deletes the data for a template from the DB
+	 * @param int $id The ID of the object to delete
+	 */
+	function deleteTemplateData(int $id)
+	{
+		$table = $this->tables["templates"];
+		$q = "DELETE FROM `" . $table . "` WHERE `id` = ?";
+		$stmt = $this->conn->prepare($q);
+		$stmt->bind_param("i", $id);
+		try {
+			$stmt->execute();
+			$stmt->close();
+		} catch (Exception $e) {
+			die("Could not delete template-data from database.");
+		}
 	}
 }
 
-/**
- * Deletes the data for a template from the DB
- * @param int $id The ID of the object to delete
- */
-function deleteTemplateData(int $id)
-{
-	global $tables;
-	global $conn;
-	$table = $tables["templates"];
-	$q = "DELETE FROM `" . $table . "` WHERE `id` = ?";
-	$stmt = $conn->prepare($q);
-	$stmt->bind_param("i", $id);
-	try {
-		$stmt->execute();
-		$stmt->close();
-	} catch (Exception $e) {
-		die("Could not delete template-data from database.");
-	}
-}
+
+
+
+
+
+
+
+
+
 //! Functions for route-management
 /**
  * Adds route-data to the database
