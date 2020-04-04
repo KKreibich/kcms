@@ -369,67 +369,25 @@ class DBConnector
 			die("Error deleting user-data. <br/> Error: " . $this->conn->error);
 		}
 	}
-}
 
-//Functions for Content-DB Management
-/**
- * Get Content-Data as array
- * @param int $id The Id of the content
- * @return array array with the content data
- */
-function getCotentData(int $id)
-{
-	global $conn;
-	global $tables;
-	$table = $tables["content"];
-	$q = "SELECT * FROM `" . $table . "` WHERE `id` = ?";
-	$stmt = $conn->prepare($q);
-	$stmt->bind_param("i", $id);
-	try {
-		$stmt->execute();
-		$result = $stmt->get_result();
-		$stmt->close();
-		$data = $result->fetch_assoc();
+	//* Content-DB
+	/**
+	 * Get Content-Data as array
+	 * @param int $id The Id of the content
+	 * @return array array with the content data
+	 */
+	function getContentData(int $id)
+	{
+		$table = $this->tables["content"];
+		$q = "SELECT * FROM `" . $table . "` WHERE `id` = ?";
+		$stmt = $this->conn->prepare($q);
+		$stmt->bind_param("i", $id);
+		try {
+			$stmt->execute();
+			$result = $stmt->get_result();
+			$stmt->close();
+			$data = $result->fetch_assoc();
 
-		if ($data["published"] == 1) {
-			$data["published"] = true;
-		} else {
-			$data["published"] = false;
-		}
-
-		if ($data["static"] == 1) {
-			$data["static"] = true;
-		} else {
-			$data["static"] = false;
-		}
-
-		if ($data["showdate"] == 1) {
-			$data["showdate"] = true;
-		} else {
-			$data["showdate"] = false;
-		}
-		return $data;
-	} catch (Exception $e) {
-		die("Error getting content-data. <br/> Error: " . $conn->error);
-	}
-}
-/**
- * Gets the data for all content in DB
- * @return array array containing the normal content-arrays
- */
-function getAllContentData()
-{
-	global $tables;
-	global $conn;
-	$table = $tables["content"];
-	$q = "SELECT * FROM `" . $table . "`";
-	$stmt = $conn->prepare($q);
-	try {
-		$stmt->execute();
-		$result = $stmt->get_result();
-		$stmt->close();
-		$compdata = array();
-		while ($data = $result->fetch_assoc()) {
 			if ($data["published"] == 1) {
 				$data["published"] = true;
 			} else {
@@ -447,322 +405,250 @@ function getAllContentData()
 			} else {
 				$data["showdate"] = false;
 			}
-			array_push($compdata, $data);
+			return $data;
+		} catch (Exception $e) {
+			die("Error getting content-data. <br/> Error: " . $this->conn->error);
 		}
-		return $compdata;
-	} catch (Exception $e) {
-		die("Error getting all content-data. <br/> Error: " . $conn->error);
 	}
-}
-/**
- * Adds the given content-data to the database
- * @param string $url the end of the url for the page
- * @param string $title the title of the page
- * @param string $subtitle the subtitle of the page
- * @param string $content_html the content of the page (html support)
- * @param int $image the mediaID of the image
- * @param int $created timestamp, when the page was created / published
- * @param bool $published published
- * @param bool $static static
- * @param bool $showdate show date
- */
-function addContentData(
-	string $url,
-	string $title,
-	string $subtitle,
-	string $content_html,
-	int $image,
-	int $created,
-	bool $published,
-	bool $static,
-	bool $showdate
-) {
-	global $conn;
-	global $tables;
-	$table = $tables["content"];
 
-	$q = "INSERT INTO `" . $table . "`
+	/**
+	 * Gets the data for all content in DB
+	 * @return array array containing the normal content-arrays
+	 */
+	function getAllContentData()
+	{
+		$table = $this->tables["content"];
+		$q = "SELECT * FROM `" . $table . "`";
+		$stmt = $this->conn->prepare($q);
+		try {
+			$stmt->execute();
+			$result = $stmt->get_result();
+			$stmt->close();
+			$compdata = array();
+			while ($data = $result->fetch_assoc()) {
+				if ($data["published"] == 1) {
+					$data["published"] = true;
+				} else {
+					$data["published"] = false;
+				}
+
+				if ($data["static"] == 1) {
+					$data["static"] = true;
+				} else {
+					$data["static"] = false;
+				}
+
+				if ($data["showdate"] == 1) {
+					$data["showdate"] = true;
+				} else {
+					$data["showdate"] = false;
+				}
+				array_push($compdata, $data);
+			}
+			return $compdata;
+		} catch (Exception $e) {
+			die("Error getting all content-data. <br/> Error: " . $this->conn->error);
+		}
+	}
+
+	/**
+	 * Adds the given content-data to the database
+	 * @param string $url the end of the url for the page
+	 * @param string $title the title of the page
+	 * @param string $subtitle the subtitle of the page
+	 * @param string $content_html the content of the page (html support)
+	 * @param int $image the mediaID of the image
+	 * @param int $created timestamp, when the page was created / published
+	 * @param bool $published published
+	 * @param bool $static static
+	 * @param bool $showdate show date
+	 */
+	function addContentData(
+		string $url,
+		string $title,
+		string $subtitle,
+		string $content_html,
+		int $image,
+		int $created,
+		bool $published,
+		bool $static,
+		bool $showdate
+	) {
+		$table = $this->tables["content"];
+		$q = "INSERT INTO `" . $table . "`
 	(`url`,`title`,`subtitle`,`content_html`,`image`,
 	`created`,`published`,`static`,`showdate`) VALUES (?,?,?,?,?,?,?,?,?)";
-	$stmt = $conn->prepare($q);
+		$stmt = $this->conn->prepare($q);
 
-	if ($published) {
-		$published_db = 1;
-	} else {
-		$published_db = 0;
-	}
-	if ($static) {
-		$static_db = 1;
-	} else {
-		$static_db = 0;
-	}
-	if ($showdate) {
-		$showdate_db = 1;
-	} else {
-		$showdate_db = 0;
-	}
+		if ($published) {
+			$published_db = 1;
+		} else {
+			$published_db = 0;
+		}
+		if ($static) {
+			$static_db = 1;
+		} else {
+			$static_db = 0;
+		}
+		if ($showdate) {
+			$showdate_db = 1;
+		} else {
+			$showdate_db = 0;
+		}
 
-	$stmt->bind_param(
-		"ssssiiiii",
-		$url,
-		$title,
-		$subtitle,
-		$content_html,
-		$image,
-		$created,
-		$published_db,
-		$static_db,
-		$showdate_db
-	);
-	try {
-		$stmt->execute();
-		$stmt->close();
-		return true;
-	} catch (Exception $e) {
-		die("Could not write content-data to database. <br/> Error: " . $conn->error);
+		$stmt->bind_param(
+			"ssssiiiii",
+			$url,
+			$title,
+			$subtitle,
+			$content_html,
+			$image,
+			$created,
+			$published_db,
+			$static_db,
+			$showdate_db
+		);
+		try {
+			$stmt->execute();
+			$stmt->close();
+			return true;
+		} catch (Exception $e) {
+			die("Could not write content-data to database. <br/> Error: " . $this->conn->error);
+		}
 	}
-}
-/**
- * Updates the content-data
- * @param int $id The ID of the content object
- * @param string $url the end of the url for the page
- * @param string $title the title of the page
- * @param string $subtitle the subtitle of the page
- * @param string $content_html the content of the page (html support)
- * @param int $image the mediaID of the image
- * @param int $created timestamp, when the page was created / published
- * @param bool $published published
- * @param bool $static static
- * @param bool $showdate show date
- */
-function updateContentData(
-	int $id,
-	string $url,
-	string $title,
-	string $subtitle,
-	string $content_html,
-	int $image,
-	int $created,
-	bool $published,
-	bool $static,
-	bool $showdate
-) {
-	global $conn;
-	global $tables;
-	$table = $tables["content"];
-
-	$q = "UPDATE `" . $table . "`
+	/**
+	 * Updates the content-data
+	 * @param int $id The ID of the content object
+	 * @param string $url the end of the url for the page
+	 * @param string $title the title of the page
+	 * @param string $subtitle the subtitle of the page
+	 * @param string $content_html the content of the page (html support)
+	 * @param int $image the mediaID of the image
+	 * @param int $created timestamp, when the page was created / published
+	 * @param bool $published published
+	 * @param bool $static static
+	 * @param bool $showdate show date
+	 */
+	function updateContentData(
+		int $id,
+		string $url,
+		string $title,
+		string $subtitle,
+		string $content_html,
+		int $image,
+		int $created,
+		bool $published,
+		bool $static,
+		bool $showdate
+	) {
+		$table = $this->tables["content"];
+		$q = "UPDATE `" . $table . "`
 	 SET `url` = ?,`title` = ?,`subtitle` = ?,`content_html` = ?,`image` = ?,
 	`created` = ?,`published` = ?,`static` = ?,`showdate` = ? WHERE `id` = ?";
-	$stmt = $conn->prepare($q);
+		$stmt = $this->conn->prepare($q);
 
-	if ($published) {
-		$published_db = 1;
-	} else {
-		$published_db = 0;
-	}
-	if ($static) {
-		$static_db = 1;
-	} else {
-		$static_db = 0;
-	}
-	if ($showdate) {
-		$showdate_db = 1;
-	} else {
-		$showdate_db = 0;
-	}
-
-	$stmt->bind_param(
-		"ssssiiiiii",
-		$url,
-		$title,
-		$subtitle,
-		$content_html,
-		$image,
-		$created,
-		$published_db,
-		$static_db,
-		$showdate_db,
-		$id
-	);
-	try {
-		$stmt->execute();
-		$stmt->close();
-		return true;
-	} catch (Exception $e) {
-		die("Could not update content-data in database. <br/> Error: " . $conn->error);
-	}
-}
-/**
- * Removes the data of a content object from the Database
- * @param string $id The ID of the content object
- */
-function removeContentData(int $id)
-{
-	global $conn;
-	global $tables;
-	$table = $tables["content"];
-	$q = "DELETE FROM `" . $table . "` WHERE `id` = ?";
-	$stmt = $conn->prepare($q);
-	$stmt->bind_param("i", $id);
-	try {
-		$stmt->execute();
-		$stmt->close();
-		return true;
-	} catch (Exception $e) {
-		die("Could not delete content-data from database. <br/> Error: " . $conn->error);
-	}
-}
-/**
- * Gets content-data by url
- * @param string $url the url
- * @return array returns array with cotent-data
- */
-function getContentDataByURL(string $url)
-{
-	global $conn;
-	global $tables;
-	$table = $tables["content"];
-	$q = "SELECT * FROM `" . $table . "` WHERE `url` = ?";
-	$stmt = $conn->prepare($q);
-	$stmt->bind_param("s", $url);
-	try {
-		$stmt->execute();
-		$result = $stmt->get_result();
-		$stmt->close();
-		$data = $result->fetch_assoc();
-
-		if ($data["published"] == 1) {
-			$data["published"] = true;
+		if ($published) {
+			$published_db = 1;
 		} else {
-			$data["published"] = false;
+			$published_db = 0;
+		}
+		if ($static) {
+			$static_db = 1;
+		} else {
+			$static_db = 0;
+		}
+		if ($showdate) {
+			$showdate_db = 1;
+		} else {
+			$showdate_db = 0;
 		}
 
-		if ($data["static"] == 1) {
-			$data["static"] = true;
-		} else {
-			$data["static"] = false;
+		$stmt->bind_param(
+			"ssssiiiiii",
+			$url,
+			$title,
+			$subtitle,
+			$content_html,
+			$image,
+			$created,
+			$published_db,
+			$static_db,
+			$showdate_db,
+			$id
+		);
+		try {
+			$stmt->execute();
+			$stmt->close();
+			return true;
+		} catch (Exception $e) {
+			die("Could not update content-data in database. <br/> Error: " . $this->conn->error);
 		}
-
-		if ($data["showdate"] == 1) {
-			$data["showdate"] = true;
-		} else {
-			$data["showdate"] = false;
-		}
-		return $data;
-	} catch (Exception $e) {
-		die("Error getting content. <br/> Error: " . $conn->error);
 	}
-}
-/**
- * Gets content-data by url
- * @param string $url the url
- * @return array returns array with cotent-data
- */
-function getContentDataByID(int $id)
-{
-	global $conn;
-	global $tables;
-	$table = $tables["content"];
-	$q = "SELECT * FROM `" . $table . "` WHERE `url` = ?";
-	$stmt = $conn->prepare($q);
-	$stmt->bind_param("i", $id);
-	try {
-		$stmt->execute();
-		$result = $stmt->get_result();
-		$stmt->close();
-		$data = $result->fetch_assoc();
 
-		if ($data["published"] == 1) {
-			$data["published"] = true;
-		} else {
-			$data["published"] = false;
+	/**
+	 * Removes the data of a content object from the Database
+	 * @param string $id The ID of the content object
+	 */
+	function removeContentData(int $id)
+	{
+		$table = $this->tables["content"];
+		$q = "DELETE FROM `" . $table . "` WHERE `id` = ?";
+		$stmt = $this->conn->prepare($q);
+		$stmt->bind_param("i", $id);
+		try {
+			$stmt->execute();
+			$stmt->close();
+			return true;
+		} catch (Exception $e) {
+			die("Could not delete content-data from database. <br/> Error: " . $this->conn->error);
 		}
-
-		if ($data["static"] == 1) {
-			$data["static"] = true;
-		} else {
-			$data["static"] = false;
-		}
-
-		if ($data["showdate"] == 1) {
-			$data["showdate"] = true;
-		} else {
-			$data["showdate"] = false;
-		}
-		return $data;
-	} catch (Exception $e) {
-		die("Error getting content. <br/> Error: " . $conn->error);
 	}
-}
-/**
- * Checks, if content exists by URL
- * @param string $url The URL to check
- * @return bool true if exists, false if not
- */
-function contentExistsByURL(string $url)
-{
-	global $conn;
-	global $tables;
-	$table = $tables["content"];
-	$q = "SELECT * FROM `" . $table . "` WHERE `url` = ?";
-	$stmt = $conn->prepare($q);
-	$stmt->bind_param("s", $url);
-	try {
-		$stmt->execute();
-		$result = $stmt->get_result();
-		$stmt->close();
-		return $result->num_rows == 1;
-	} catch (Exception $e) {
-		die("Could not check if content-data exists. <br/> Error: " . $conn->error);
+
+	/**
+	 * Checks if content exists by ID
+	 * @param int $id The ID to check
+	 * @return bool true if exists, false if not
+	 */
+	function contentExists(int $id)
+	{
+		$table = $this->tables["content"];
+		$q = "SELECT * FROM `" . $table . "` WHERE `id` = ?";
+		$stmt = $this->conn->prepare($q);
+		$stmt->bind_param("i", $id);
+		try {
+			$stmt->execute();
+			$result = $stmt->get_result();
+			$stmt->close();
+			return $result->num_rows == 1;
+		} catch (Exception $e) {
+			die("Could not check if content-data exists. <br/> Error: " . $this->conn->error);
+		}
 	}
-}
-/**
- * Checks if content exists by ID
- * @param int $id The ID to check
- * @return bool true if exists, false if not
- */
-function contentExistsByID(int $id)
-{
-	global $conn;
-	global $tables;
-	$table = $tables["content"];
-	$q = "SELECT * FROM `" . $table . "` WHERE `id` = ?";
-	$stmt = $conn->prepare($q);
-	$stmt->bind_param("i", $id);
-	try {
-		$stmt->execute();
-		$result = $stmt->get_result();
-		$stmt->close();
-		return $result->num_rows == 1;
-	} catch (Exception $e) {
-		die("Could not check if content-data exists. <br/> Error: " . $conn->error);
+
+	//* Media-DB
+	/**
+	 * Adds the data for a media-object to the database
+	 * @param string $name Name
+	 * @param int $type ID for the Media-Type
+	 * @param string $path Path to the media-file
+	 * @param string $desc Description
+	 */
+	function addMediaData(string $name, int $type, string $path, string $desc)
+	{
+		$table = $this->tables["media"];
+		$q = "INSERT INTO `" . $table . "`(`name`,`type`,`path`,`desc`) VALUES (?,?,?,?)";
+		$stmt = $this->conn->prepare($q);
+		$stmt->bind_param("siss", $name, $type, $path, $desc);
+		try {
+			$stmt->execute();
+			$stmt->close();
+		} catch (Exception $e) {
+			die("Could not insert Media-Data. <br/> Error: " . $this->conn->error);
+		}
 	}
 }
 
-//! Functions for Media-Management
-/**
- * Adds the data for a media-object to the database
- * @param string $name Name
- * @param int $type ID for the Media-Type
- * @param string $path Path to the media-file
- * @param string $desc Description
- */
-function addMediaData(string $name, int $type, string $path, string $desc)
-{
-	global $conn;
-	global $tables;
-	$table = $tables["media"];
-	$q = "INSERT INTO `" . $table . "`(`name`,`type`,`path`,`desc`) VALUES (?,?,?,?)";
-	$stmt = $conn->prepare($q);
-	$stmt->bind_param("siss", $name, $type, $path, $desc);
-	try {
-		$stmt->execute();
-		$stmt->close();
-	} catch (Exception $e) {
-		die("Could not insert Media-Data. <br/> Error: " . $conn->error);
-	}
-}
+
 /**
  * Updates the data for a media-object in the database
  * @param int $id The ID of the object to update
