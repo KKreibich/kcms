@@ -182,7 +182,8 @@ class DBConnector
 	 * @param string $conf_name the name of the config entry
 	 * @return bool return true if config has been deleted
 	 */
-	function removeConfigData(string $conf_name){
+	function deleteConfigData(string $conf_name)
+	{
 		$table = $this->tables["config"];
 		if ($this->configExists($conf_name)) {
 			$q = "DELETE FROM `" . $table . "` WHERE `conf_name` = ?";
@@ -197,181 +198,176 @@ class DBConnector
 		}
 		return true;
 	}
-}
 
-// Functions for User Data-Management
-/**
- * Checks if User Exists
- * @param int $id The ID of the User
- * @return bool true if users exists, false if not
- */
-function userExists(int $id)
-{
-	global $tables;
-	global $conn;
-	$table = $tables["users"];
-	$q = "SELECT * FROM `" . $table . "` WHERE `id` = ?";
-	$stmt = $conn->prepare($q);
-	$stmt->bind_param("i", $id);
-	try {
-		$stmt->execute();
-		$result = $stmt->get_result();
-		$stmt->close();
-		if ($result->num_rows == 1) {
+	//* User-DB
+	/**
+	 * Checks if User Exists
+	 * @param int $id The ID of the User
+	 * @return bool true if users exists, false if not
+	 */
+	function userExists(int $id)
+	{
+		$table = $this->tables["users"];
+		$q = "SELECT * FROM `" . $table . "` WHERE `id` = ?";
+		$stmt = $this->conn->prepare($q);
+		$stmt->bind_param("i", $id);
+		try {
+			$stmt->execute();
+			$result = $stmt->get_result();
+			$stmt->close();
+			if ($result->num_rows == 1) {
+				return true;
+			} else {
+				return false;
+			}
+		} catch (Exception $e) {
+			die("Could not check if user exists. <br/> Error: " . $this->conn->error);
+		}
+	}
+
+	/**
+	 * Gets the ID of an user
+	 * @param string $name The name of the user
+	 * @return int returns the ID, null if user doesn't exist
+	 */
+	function getUserID(string $name)
+	{
+		$table = $this->tables["users"];
+		$q = "SELECT * FROM `" . $table . "` WHERE `name` = ?";
+		$stmt = $this->conn->prepare($q);
+		$stmt->bind_param("s", $name);
+		try {
+			$stmt->execute();
+			$result = $stmt->get_result();
+			$stmt->close();
+			if ($result->num_rows == 1) {
+				$data = $result->fetch_assoc();
+				return $data["id"];
+			} else {
+				return null;
+			}
+		} catch (Exception $e) {
+			die("Could not get userID. <br/> Error: " . $this->conn->error);
+		}
+	}
+
+	/**
+	 * Gets the Data for a user by ID
+	 * @param int $id The ID of the user
+	 * @return array returns array with data from database or null, if user doesn't exist
+	 */
+	function getUserData(int $id)
+	{
+		$table = $this->tables["users"];
+		$q = "SELECT * FROM `" . $table . "` WHERE `id` = ?";
+		$stmt = $this->conn->prepare($q);
+		$stmt->bind_param("i", $id);
+		try {
+			$stmt->execute();
+			$result = $stmt->get_result();
+			$stmt->close();
+			if ($result->num_rows == 1) {
+				$data = $result->fetch_assoc();
+				return $data;
+			} else {
+				return null;
+			}
+		} catch (Exception $e) {
+			die("Could not get user-data. <br/> Error: " . $this->conn->error);
+		}
+	}
+
+	/**
+	 * Gets Data for all Users from the Database
+	 * @return array Array with normal user-data arrays
+	 */
+	function getAllUserData()
+	{
+		$table = $this->tables["users"];
+		$q = "SELECT * FROM `" . $table . "`";
+		$result = $this->conn->query($q);
+		$datalist = array();
+		while ($userData = $result->fetch_assoc()) {
+			array_push($datalist, $userData);
+		}
+		return $datalist;
+	}
+
+	/**
+	 * Sets the data for an user to the database
+	 * @param int $id The ID for the user
+	 * @param int $role the new role
+	 * @param string $name the new name
+	 * @param string $pass_hash the new, hashed password
+	 * @param string $author_name the new author-name
+	 * @param string $email the new e-mail adress
+	 * @return array returns the data, that has been written to the DB
+	 */
+	function updateUserData(int $id, int $role, string $name, string $pass_hash, string $author_name, string $email)
+	{
+		$table = $this->tables["users"];
+		if ($this->userExists($id)) {
+			$q = "UPDATE `" . $table . "` SET `role` = ?,`name` = ?', `pass_hash` = ?, `author_name` = ? `email` = ? WHERE `id` = ?";
+			$stmt = $this->conn->prepare($q);
+			$stmt->bind_param("issssi", $role, $name, $pass_hash, $author_name, $email, $id);
+			try {
+				$stmt->execute();
+				$stmt->close();
+				return $this->getUserData($id);
+			} catch (Exception $e) {
+				die("Could not update user-data. <br/> Error: " . $this->conn->error);
+			}
+		} else {
+			die("Trying to update an non-existing user.");
+		}
+	}
+
+	/**
+	 * Creates an new user in the Database
+	 * @param int $role roleID
+	 * @param string $name a unique name for the user
+	 * @param string $pass_hash the hashed password
+	 * @param string $author_name the name that should be displayed in posts
+	 * @param string $email the users e-mail adress
+	 * @return array the data that has been written to the DB
+	 */
+	function addUserData(int $role, string $name, string $pass_hash, string $author_name, string $email)
+	{
+		$table = $this->tables["users"];
+		if ($this->getUserID($name) == null) {
+			$q = "INSERT INTO `" . $table . "`(`role`,`name`,`pass_hash`,`author_name`,`email`) VALUES (?,?,?,?,?)";
+			$stmt = $this->conn->prepare($q);
+			$stmt->bind_param("issss", $role, $name, $pass_hash, $author_name, $email);
+			try {
+				$stmt->execute();
+				$stmt->close();
+				return $this->getUserData($this->getUserID($name));
+			} catch (Exception $e) {
+				die("Error creating user-data. <br/> Error: " . $this->conn->error);
+			}
+		} else {
+			die("Trying to create user that aready exists.");
+		}
+	}
+
+	/**
+	 * Removes the data for a user from the Database
+	 * @param int $id The ID of the user
+	 * @return bool returns true if user has been deleted
+	 */
+	function removeUserData(int $id)
+	{
+		$table = $this->tables["users"];
+		$q = "DELETE FROM `" . $table . "` WHERE `id` = ?";
+		$stmt = $this->conn->prepare($q);
+		$stmt->bind_param("i", $id);
+		try {
+			$stmt->execute();
+			$stmt->close();
 			return true;
-		} else {
-			return false;
-		}
-	} catch (Exception $e) {
-		die("Could not check if user exists. <br/> Error: " . $conn->error);
-	}
-}
-/**
- * Gets the ID of an user
- * @param string $name The name of the user
- * @return int returns the ID, null if user doesn't exist
- */
-function getUserID(string $name)
-{
-	global $tables;
-	global $conn;
-	$table = $tables["users"];
-	$q = "SELECT * FROM `" . $table . "` WHERE `name` = ?";
-	$stmt = $conn->prepare($q);
-	$stmt->bind_param("s", $name);
-	try {
-		$stmt->execute();
-		$result = $stmt->get_result();
-		$stmt->close();
-		if ($result->num_rows == 1) {
-			$data = $result->fetch_assoc();
-			return $data["id"];
-		} else {
-			return null;
-		}
-	} catch (Exception $e) {
-		die("Could not get userID. <br/> Error: " . $conn->error);
-	}
-}
-
-/**
- * Gets the Data for a user by ID
- * @param int $id The ID of the user
- * @return array returns array with data from database or null, if user doesn't exist
- */
-function getUserData(int $id)
-{
-	global $tables;
-	global $conn;
-	$table = $tables["users"];
-	$q = "SELECT * FROM `" . $table . "` WHERE `id` = ?";
-	$stmt = $conn->prepare($q);
-	$stmt->bind_param("i", $id);
-	try {
-		$stmt->execute();
-		$result = $stmt->get_result();
-		$stmt->close();
-		if ($result->num_rows == 1) {
-			$data = $result->fetch_assoc();
-			return $data;
-		} else {
-			return null;
-		}
-	} catch (Exception $e) {
-		die("Could not get user-data. <br/> Error: " . $conn->error);
-	}
-}
-function getAllUserData()
-{
-	global $tables;
-	global $conn;
-	$table = $tables["users"];
-	$q = "SELECT * FROM `" . $table . "`";
-	$result = $conn->query($q);
-	$datalist = array();
-	while ($userData = $result->fetch_assoc()) {
-		array_push($datalist, $userData);
-	}
-	return $datalist;
-}
-/**
- * Sets the data for an user to the database
- * @param int $id The ID for the user
- * @param int $role the new role
- * @param string $name the new name
- * @param string $pass_hash the new, hashed password
- * @param string $author_name the new author-name
- * @param string $email the new e-mail adress
- * @return array returns the data, that has been written to the DB
- */
-function updateUserData(int $id, int $role, string $name, string $pass_hash, string $author_name, string $email)
-{
-	global $tables;
-	global $conn;
-	$table = $tables["users"];
-	if (userExists($id)) {
-		$q = "UPDATE `" . $table . "` SET `role` = ?,`name` = ?', `pass_hash` = ?, `author_name` = ? `email` = ? WHERE `id` = ?";
-		$stmt = $conn->prepare($q);
-		$stmt->bind_param("issssi", $role, $name, $pass_hash, $author_name, $email, $id);
-		try {
-			$stmt->execute();
-			$stmt->close();
-			return getUserData($id);
 		} catch (Exception $e) {
-			die("Could not update user-data. <br/> Error: " . $conn->error);
+			die("Error deleting user-data. <br/> Error: " . $this->conn->error);
 		}
-	} else {
-		die("Trying to update an non-existing user.");
-	}
-}
-/**
- * Creates an new user in the Database
- * @param int $role roleID
- * @param string $name a unique name for the user
- * @param string $pass_hash the hashed password
- * @param string $author_name the name that should be displayed in posts
- * @param string $email the users e-mail adress
- * @return array the data that has been written to the DB
- */
-function addUserData(int $role, string $name, string $pass_hash, string $author_name, string $email)
-{
-	global $tables;
-	global $conn;
-	$table = $tables["users"];
-	if (getUserID($name) == null) {
-		$q = "INSERT INTO `" . $table . "`(`role`,`name`,`pass_hash`,`author_name`,`email`) VALUES (?,?,?,?,?)";
-		$stmt = $conn->prepare($q);
-		$stmt->bind_param("issss", $role, $name, $pass_hash, $author_name, $email);
-		try {
-			$stmt->execute();
-			$stmt->close();
-			return getUserData(getUserID($name));
-		} catch (Exception $e) {
-			die("Error creating user-data. <br/> Error: " . $conn->error);
-		}
-	} else {
-		die("Trying to create user that aready exists.");
-	}
-}
-/**
- * Removes the data for a user from the Database
- * @param int $id The ID of the user
- * @return bool returns true if user has been deleted
- */
-function removeUserData(int $id)
-{
-	global $tables;
-	global $conn;
-	$table = $tables["users"];
-	$q = "DELETE FROM `" . $table . "` WHERE `id` = ?";
-	$stmt = $conn->prepare($q);
-	$stmt->bind_param("i", $id);
-	try {
-		$stmt->execute();
-		$stmt->close();
-		return true;
-	} catch (Exception $e) {
-		die("Error deleting user-data. <br/> Error: " . $conn->error);
 	}
 }
 
@@ -733,7 +729,7 @@ function contentExistsByID(int $id)
 	$table = $tables["content"];
 	$q = "SELECT * FROM `" . $table . "` WHERE `id` = ?";
 	$stmt = $conn->prepare($q);
-	$stmt->bind_param("i", $url);
+	$stmt->bind_param("i", $id);
 	try {
 		$stmt->execute();
 		$result = $stmt->get_result();
