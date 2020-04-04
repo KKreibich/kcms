@@ -646,117 +646,117 @@ class DBConnector
 			die("Could not insert Media-Data. <br/> Error: " . $this->conn->error);
 		}
 	}
-}
 
-
-/**
- * Updates the data for a media-object in the database
- * @param int $id The ID of the object to update
- * @param string $name Name
- * @param int $type ID for the Media-Type
- * @param string $path Path to the media-file
- * @param string $desc Description
- */
-function updateMediaData(int $id, string $name, int $type, string $path, string $desc)
-{
-	global $tables;
-	global $conn;
-	$table = $tables["media"];
-	$q = "UPDATE `" . $table . "` SET `name` = ?, `type` = ?, `path` = ?, `desc` = ? WHERE `id` = ?";
-	$stmt = $conn->prepare($q);
-	$stmt->bind_param("sissi", $name, $type, $path, $desc, $id);
-	try {
-		$stmt->execute();
-		$stmt->close();
-	} catch (Exception $e) {
-		die("Could not update Media-Data. <br/> Error: " . $conn->error);
-	}
-}
-/**
- * Fetches the data for a media-object from the database
- * @param int $id The ID of the object
- * @return array Array with data, returns null if not existing
- */
-function getMediaData(int $id)
-{
-	global $tables;
-	global $conn;
-	$table = $tables["media"];
-	$q = "SELECT * FROM `" . $table . "` WHERE `id` = ?";
-	$stmt = $conn->prepare($q);
-	$stmt->bind_param("i", $id);
-	try {
-		$stmt->execute();
-		$result = $stmt->get_result();
-		if ($result->num_rows != 1) {
-			return null;
+	/**
+	 * Updates the data for a media-object in the database
+	 * @param int $id The ID of the object to update
+	 * @param string $name Name
+	 * @param int $type ID for the Media-Type
+	 * @param string $path Path to the media-file
+	 * @param string $desc Description
+	 */
+	function updateMediaData(int $id, string $name, int $type, string $path, string $desc)
+	{
+		$table = $this->tables["media"];
+		$q = "UPDATE `" . $table . "` SET `name` = ?, `type` = ?, `path` = ?, `desc` = ? WHERE `id` = ?";
+		$stmt = $this->conn->prepare($q);
+		$stmt->bind_param("sissi", $name, $type, $path, $desc, $id);
+		try {
+			$stmt->execute();
+			$stmt->close();
+		} catch (Exception $e) {
+			die("Could not update Media-Data. <br/> Error: " . $this->conn->error);
 		}
-		$data = $result->fetch_assoc();
-		$stmt->close();
-		return $data;
-	} catch (Exception $e) {
-		die("Could not fetch Media-Data. <br/> Error: " . $conn->error);
 	}
-}
-/**
- * Checks if media-object exists in Database
- * @param int $id The ID to check
- * @return bool exists / not
- */
-function mediaDataExists(int $id)
-{
-	global $tables;
-	global $conn;
-	$table = $tables["media"];
-	$q = "SELECT * FROM `" . $table . "` WHERE `id` = ?";
-	$stmt = $conn->prepare($q);
-	$stmt->bind_param("i", $id);
-	try {
-		$stmt->execute();
-		$result = $stmt->get_result();
-		$stmt->close();
-		return $result->num_rows == 1;
-	} catch (Exception $e) {
-		die("Could not fetch Media-Data. <br/> Error: " . $conn->error);
+
+	/**
+	 * Fetches the data for a media-object from the database
+	 * @param int $id The ID of the object
+	 * @return array Array with data, returns null if not existing
+	 */
+	function getMediaData(int $id)
+	{
+		$table = $this->tables["media"];
+		$q = "SELECT * FROM `" . $table . "` WHERE `id` = ?";
+		$stmt = $this->conn->prepare($q);
+		$stmt->bind_param("i", $id);
+		try {
+			$stmt->execute();
+			$result = $stmt->get_result();
+			if ($result->num_rows != 1) {
+				return null;
+			}
+			$data = $result->fetch_assoc();
+			$stmt->close();
+			return $data;
+		} catch (Exception $e) {
+			die("Could not fetch Media-Data. <br/> Error: " . $this->conn->error);
+		}
 	}
-}
-/**
- * Deletes the data for the media-object
- * @param int $id the ID of the item to delete
- */
-function deleteMediaData(int $id)
-{
-	global $tables;
-	global $conn;
-	$table = $tables["media"];
-	$q = "DELETE FROM `" . $table . "` WHERE `id` = ?";
-	$stmt = $conn->prepare($q);
-	$stmt->bind_param("i", $id);
-	try {
-		$stmt->execute();
-		$stmt->close();
-	} catch (Exception $e) {
-		die("Could not fetch Media-Data. <br/> Error: " . $conn->error);
+
+	/**
+	 * Checks if media-object exists in Database
+	 * @param int $id The ID to check
+	 * @return bool exists / not
+	 */
+	function mediaDataExists(int $id)
+	{
+		$table = $this->tables["media"];
+		$q = "SELECT * FROM `" . $table . "` WHERE `id` = ?";
+		$stmt = $this->conn->prepare($q);
+		$stmt->bind_param("i", $id);
+		try {
+			$stmt->execute();
+			$result = $stmt->get_result();
+			$stmt->close();
+			return $result->num_rows == 1;
+		} catch (Exception $e) {
+			die("Could not fetch Media-Data. <br/> Error: " . $this->conn->error);
+		}
+	}
+
+	/**
+	 * Deletes the data for the media-object
+	 * @param int $id the ID of the item to delete
+	 */
+	function deleteMediaData(int $id)
+	{
+		$table = $this->tables["media"];
+		$q = "DELETE FROM `" . $table . "` WHERE `id` = ?";
+		$stmt = $this->conn->prepare($q);
+		$stmt->bind_param("i", $id);
+		try {
+			$stmt->execute();
+			$stmt->close();
+		} catch (Exception $e) {
+			die("Could not fetch Media-Data. <br/> Error: " . $this->conn->error);
+		}
+	}
+
+	/**
+	 * Fetches all media-data from the database.
+	 * @return array Array containing normal data-arrays
+	 */
+	function getAllMediaData()
+	{
+		$table = $this->tables["media"];
+		$q = "SELECT * FROM `" . $table . "`";
+		$result = $this->conn->query($q);
+		$datalist = array();
+		while ($confData = $result->fetch_assoc()) {
+			array_push($datalist, $confData);
+		}
+		return $datalist;
 	}
 }
 
-/**
- * Fetches all media-data from the database.
- * @return array Array containing normal data-arrays
- */
-function getAllMediaData()
-{
-	global $tables;
-	global $conn;
-	$table = $tables["media"];
-	$q = "SELECT * FROM `" . $table . "`";
-	$result = $conn->query($q);
-	$datalist = array();
-	while ($confData = $result->fetch_assoc()) {
-		array_push($datalist, $confData);
-	}
-	return $datalist;
-}
+
+
+
+
+
+
+
 
 //! Functions for template-management
 //INFO: Only for having a list of all templates,
