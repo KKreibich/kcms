@@ -589,7 +589,7 @@ class DBConnector
 	 * Removes the data of a content object from the Database
 	 * @param string $id The ID of the content object
 	 */
-	public function removeContentData(int $id)
+	public function deleteContentData(int $id)
 	{
 		$table = $this->tables["content"];
 		$q = "DELETE FROM `" . $table . "` WHERE `id` = ?";
@@ -620,6 +620,29 @@ class DBConnector
 			$result = $stmt->get_result();
 			$stmt->close();
 			return $result->num_rows == 1;
+		} catch (Exception $e) {
+			die("Could not check if content-data exists. <br/> Error: " . $this->conn->error);
+		}
+	}
+
+	/**
+	 * @param string $intname The internalName of the contentItem
+	 * @return int The ID
+	 */
+	public function getContentID(string $intname){
+		$table = $this->tables["content"];
+		$q = "SELECT * FROM `" . $table . "` WHERE `url` = ?";
+		$stmt = $this->conn->prepare($q);
+		$stmt->bind_param("i", $intname);
+		try {
+			$stmt->execute();
+			$result = $stmt->get_result();
+			$stmt->close();
+			if($result->num_rows == 1){
+				return $result->fetch_assoc()["id"];
+			} else {
+				return false;
+			}
 		} catch (Exception $e) {
 			die("Could not check if content-data exists. <br/> Error: " . $this->conn->error);
 		}
