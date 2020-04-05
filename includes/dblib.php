@@ -2,8 +2,8 @@
 
 class DBConnector
 {
-	private mysqli $conn;
-	private array $tables;
+	private $conn;
+	private $tables;
 	private $createStatements = array();
 
 	//* Init DB

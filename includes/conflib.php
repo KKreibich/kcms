@@ -4,7 +4,7 @@ require_once($_SERVER["DOCUMENT_ROOT"]."/includes/dblib.php");
 class configItem{
     private $config_name;
     private $config_value;
-    private DBConnector $dbconn;
+    private $dbconn;
     function __construct(string $config_name, string $config_value, DBConnector $dbconn)
     {
         $this->config_name = $config_name;
