@@ -874,187 +874,164 @@ class DBConnector
 			die("Could not delete template-data from database.");
 		}
 	}
-}
 
-
-
-
-
-
-
-
-
-
-//! Functions for route-management
-/**
- * Adds route-data to the database
- * @param string $name The display-name in admin-panel
- * @param string $url the url to route
- * @param int $type the route-type (0 = Redirect, 1 = show page)
- * @param int $z_code HTTP-Code to use for redirect, set null if type != 0
- * @param string $z_url The URL to redirect to, set null if type != 0
- * @param int $o_pgid The Page-ID of the page to show, set null if type != 1
- */
-function addRouteData(string $name, string $url, int $type, ?int $z_code, ?string $z_url, ?int $o_pgid)
-{
-	global $conn;
-	global $tables;
-	$table = $tables["routes"];
-	$q = "INSERT INTO `" . $table . "`(`name`, `url`, `type`, `0_code`, `0_url`, `1_pgid`) VALUES (?,?,?,?,?,?)";
-	$stmt = $conn->prepare($q);
-	$stmt->bind_param("ssiisi", $name, $url, $type, $z_code, $z_url, $o_pgid);
-	try {
-		$stmt->execute();
-		$stmt->close();
-	} catch (Exception $e) {
-		die("Could not add route-data.");
+	//* Route-DB
+	/**
+	 * Adds route-data to the database
+	 * @param string $name The display-name in admin-panel
+	 * @param string $url the url to route
+	 * @param int $type the route-type (0 = Redirect, 1 = show page)
+	 * @param int $z_code HTTP-Code to use for redirect, set null if type != 0
+	 * @param string $z_url The URL to redirect to, set null if type != 0
+	 * @param int $o_pgid The Page-ID of the page to show, set null if type != 1
+	 */
+	public function addRouteData(string $name, string $url, int $type, ?int $z_code, ?string $z_url, ?int $o_pgid)
+	{
+		$table = $this->tables["routes"];
+		$q = "INSERT INTO `" . $table . "`(`name`, `url`, `type`, `0_code`, `0_url`, `1_pgid`) VALUES (?,?,?,?,?,?)";
+		$stmt = $this->conn->prepare($q);
+		$stmt->bind_param("ssiisi", $name, $url, $type, $z_code, $z_url, $o_pgid);
+		try {
+			$stmt->execute();
+			$stmt->close();
+		} catch (Exception $e) {
+			die("Could not add route-data.");
+		}
 	}
-}
 
-/**
- * Checks if route exists by id
- * @param int $id the id1 to check
- * @return bool exists / not
- */
-function routeExistsByID(int $id)
-{
-	global $conn;
-	global $tables;
-	$table = $tables["routes"];
-	$q = "SELECT * FROM `" . $table . "` WHERE `id` = ?";
-	$stmt = $conn->prepare($q);
-	$stmt->bind_param("i", $id);
-	try {
-		$stmt->execute();
-		$result = $stmt->get_result();
-		$stmt->close();
-		return $result->num_rows == 1;
-	} catch (Exception $e) {
-		die("Could not check if route exists by ID.");
+	/**
+	 * Checks if route exists by id
+	 * @param int $id the id1 to check
+	 * @return bool exists / not
+	 */
+	public function routeExistsByID(int $id)
+	{
+		$table = $this->tables["routes"];
+		$q = "SELECT * FROM `" . $table . "` WHERE `id` = ?";
+		$stmt = $this->conn->prepare($q);
+		$stmt->bind_param("i", $id);
+		try {
+			$stmt->execute();
+			$result = $stmt->get_result();
+			$stmt->close();
+			return $result->num_rows == 1;
+		} catch (Exception $e) {
+			die("Could not check if route exists by ID.");
+		}
 	}
-}
 
-/**
- * Checks if route exists by url
- * @param string $url the url to check
- * @return bool exists / not
- */
-function routeExistsByURL(string $url)
-{
-	global $conn;
-	global $tables;
-	$table = $tables["routes"];
-	$q = "SELECT * FROM `" . $table . "` WHERE `url` = ?";
-	$stmt = $conn->prepare($q);
-	if ($stmt instanceof bool) {
-		die("Error in mysql. " . $conn->error);
+	/**
+	 * Checks if route exists by url
+	 * @param string $url the url to check
+	 * @return bool exists / not
+	 */
+	public function routeExistsByURL(string $url)
+	{
+		$table = $this->tables["routes"];
+		$q = "SELECT * FROM `" . $table . "` WHERE `url` = ?";
+		$stmt = $this->conn->prepare($q);
+		if ($stmt instanceof bool) {
+			die("Error in mysql. " . $this->conn->error);
+		}
+		try {
+			$stmt->bind_param("s", $url);
+			$stmt->execute();
+			$result = $stmt->get_result();
+			$stmt->close();
+			return $result->num_rows == 1;
+		} catch (Exception $e) {
+			die("Could not check if route exists by ID. <br/>" . $this->conn->error);
+		}
 	}
-	try {
+
+	/**
+	 * gets the route-id for a url
+	 * @param string $url 
+	 * @return int the ID, null if not existing
+	 */
+	public function getRouteID(string $url)
+	{
+		$table = $this->tables["routes"];
+		$q = "SELECT * FROM `" . $table . "` WHERE `url` = ?";
+		$stmt = $this->conn->prepare($q);
 		$stmt->bind_param("s", $url);
-		$stmt->execute();
-		$result = $stmt->get_result();
-		$stmt->close();
-		return $result->num_rows == 1;
-	} catch (Exception $e) {
-		die("Could not check if route exists by ID. <br/>" . $conn->error);
-	}
-}
-
-/**
- * gets the route-id for a url
- * @param string $url 
- * @return int the ID, null if not existing
- */
-function getRouteID(string $url)
-{
-	global $conn;
-	global $tables;
-	$table = $tables["routes"];
-	$q = "SELECT * FROM `" . $table . "` WHERE `url` = ?";
-	$stmt = $conn->prepare($q);
-	$stmt->bind_param("s", $url);
-	try {
-		$stmt->execute();
-		$result = $stmt->get_result();
-		$stmt->close();
-		if ($result->num_rows != 1) {
-			return null;
+		try {
+			$stmt->execute();
+			$result = $stmt->get_result();
+			$stmt->close();
+			if ($result->num_rows != 1) {
+				return null;
+			}
+			return $result->fetch_assoc()["id"];
+		} catch (Exception $e) {
+			die("Could not get route-ID.");
 		}
-		return $result->fetch_assoc()["id"];
-	} catch (Exception $e) {
-		die("Could not get route-ID.");
 	}
-}
 
-/**
- * Fetches the Data for a route from the database
- * @param int $id the id of the route
- * @return array Array with the route-data
- */
-function getRouteData(int $id)
-{
-	global $conn;
-	global $tables;
-	$table = $tables["routes"];
-	$q = "SELECT * FROM `" . $table . "` WHERE `id` = ?";
-	$stmt = $conn->prepare($q);
-	$stmt->bind_param("i", $id);
-	try {
-		$stmt->execute();
-		$result = $stmt->get_result();
-		$stmt->close();
-		if ($result->num_rows != 1) {
-			return null;
+	/**
+	 * Fetches the Data for a route from the database
+	 * @param int $id the id of the route
+	 * @return array Array with the route-data
+	 */
+	public function getRouteData(int $id)
+	{
+		$table = $this->tables["routes"];
+		$q = "SELECT * FROM `" . $table . "` WHERE `id` = ?";
+		$stmt = $this->conn->prepare($q);
+		$stmt->bind_param("i", $id);
+		try {
+			$stmt->execute();
+			$result = $stmt->get_result();
+			$stmt->close();
+			if ($result->num_rows != 1) {
+				return null;
+			}
+			return $result->fetch_assoc();
+		} catch (Exception $e) {
+			die("Could not get route-data.");
 		}
-		return $result->fetch_assoc();
-	} catch (Exception $e) {
-		die("Could not get route-data.");
 	}
-}
 
-/**
- * Updates the data for a route
- * @param int $id The ID of the object to update
- * @param string $name The display-name in admin-panel
- * @param string $url the url to route
- * @param int $type the route-type (0 = Redirect, 1 = show page)
- * @param int $z_code HTTP-Code to use for redirect, set null if type != 0
- * @param string $z_url The URL to redirect to, set null if type != 0
- * @param int $o_pgid The Page-ID of the page to show, set null if type != 1
- */
-function updateRouteData(int $id, string $name, string $url, int $type, ?int $z_code, ?string $z_url, ?int $o_pgid)
-{
-	global $conn;
-	global $tables;
-	$table = $tables["routes"];
-	$q = "UPDATE `" . $table . "` SET 
+	/**
+	 * Updates the data for a route
+	 * @param int $id The ID of the object to update
+	 * @param string $name The display-name in admin-panel
+	 * @param string $url the url to route
+	 * @param int $type the route-type (0 = Redirect, 1 = show page)
+	 * @param int $z_code HTTP-Code to use for redirect, set null if type != 0
+	 * @param string $z_url The URL to redirect to, set null if type != 0
+	 * @param int $o_pgid The Page-ID of the page to show, set null if type != 1
+	 */
+	public function updateRouteData(int $id, string $name, string $url, int $type, ?int $z_code, ?string $z_url, ?int $o_pgid)
+	{
+		$table = $this->tables["routes"];
+		$q = "UPDATE `" . $table . "` SET 
 	`name` = ?, `url` = ?, `type` = ?, `0_code` = ?, `0_url` = ?, `1_pgid` = ? WHERE `id` = ?";
-	$stmt = $conn->prepare($q);
-	$stmt->bind_param("ssiisii", $name, $url, $type, $z_code, $z_url, $o_pgid, $id);
-	try {
-		$stmt->execute();
-		$stmt->close();
-	} catch (Exception $e) {
-		die("Could not update route-data.");
+		$stmt = $this->conn->prepare($q);
+		$stmt->bind_param("ssiisii", $name, $url, $type, $z_code, $z_url, $o_pgid, $id);
+		try {
+			$stmt->execute();
+			$stmt->close();
+		} catch (Exception $e) {
+			die("Could not update route-data.");
+		}
 	}
-}
 
-/**
- * Deletes the data for a route
- * @param int $id The ID of the route to delete
- */
-function deleteRouteData(int $id)
-{
-	global $conn;
-	global $tables;
-	$table = $tables["routes"];
-	$q = "DELETE FROM `" . $table . "` WHERE `id` = ?";
-	$stmt = $conn->prepare($q);
-	$stmt->bind_param("i", $id);
-	try {
-		$stmt->execute();
-		$stmt->close();
-	} catch (Exception $e) {
-		die("Could not update route-data.");
+	/**
+	 * Deletes the data for a route
+	 * @param int $id The ID of the route to delete
+	 */
+	public function deleteRouteData(int $id)
+	{
+		$table = $this->tables["routes"];
+		$q = "DELETE FROM `" . $table . "` WHERE `id` = ?";
+		$stmt = $this->conn->prepare($q);
+		$stmt->bind_param("i", $id);
+		try {
+			$stmt->execute();
+			$stmt->close();
+		} catch (Exception $e) {
+			die("Could not update route-data.");
+		}
 	}
 }
