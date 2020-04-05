@@ -51,7 +51,7 @@ class configItem{
 }
 
 class configManager{
-    private DBConnector $dbconn;
+    private $dbconn;
     function __construct()
     {
         $this->dbconn = new DBConnector();
