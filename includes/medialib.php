@@ -8,13 +8,15 @@ class mediaItem
     private $type;
     private $path;
     private $desc;
-    function __construct(int $id, string $name, int $type, string $path, string $desc)
+    private $dbconn;
+    function __construct(int $id, string $name, int $type, string $path, string $desc, DBConnector $dbconn)
     {
         $this->id = $id;
         $this->name = $name;
         $this->type = $type;
         $this->path = $path;
         $this->desc = $desc;
+        $this->dbconn = $dbconn;
     }
     /**
      * @return int The ID of the Item
@@ -25,7 +27,7 @@ class mediaItem
     }
     /**
      * @return string The Description of the item
-     */ 
+     */
     public function getName()
     {
         return $this->name;
@@ -58,42 +60,63 @@ class mediaItem
      * @param string $path The new path 
      * @param string $desc The new description
      */
-    public function setData(string $name, int $type, string $path, string $desc){
-        updateMediaData($this->id, $name, $type, $path, $desc);
+    public function setData(string $name, int $type, string $path, string $desc)
+    {
+        $this->dbconn->updateMediaData($this->id, $name, $type, $path, $desc);
         $this->updateVars();
     }
-    public function updateVars(){
-        $data = getMediaData($this->id);
+    public function updateVars()
+    {
+        $data = $this->dbconn->getMediaData($this->id);
         $this->name = $data["name"];
         $this->type = $data["type"];
         $this->path = $data["path"];
         $this->desc = $data["desc"];
     }
-}
 
-/**
- * Gets a mediItem from the database
- * @param int $id ID of the object
- * @return mediaItem The item
- */
-function getMedia(int $id){
-    $data = getMediaData($id);
-    if($data != null){
-        return new mediaItem($data["id"], $data["name"], $data["type"], $data["path"], $data["desc"]);
-    } else {
-        return null;
+    /**
+     * Deletes the mediaItem
+     */
+    public function delete()
+    {
+        $this->dbconn->deleteMediaData($this->id);
     }
 }
 
-/**
- * Gets all media-object from the database
- * @return array Array with all mediaItems
- */
-function getAllMedia(){
-    $dataArray = getAllMediaData();
-    $objArray = array();
-    foreach($dataArray as $data){
-        array_push($objArray, new mediaItem($data["id"], $data["name"], $data["type"], $data["path"], $data["path"]));
+class mediaManager
+{
+    private $dbconn;
+    function __construct()
+    {
+        $this->dbconn = new DBConnector();
     }
-    return $objArray;
+
+    /**
+     * Gets a mediItem from the database
+     * @param int $id ID of the object
+     * @return mediaItem The item
+     */
+    public function getMedia(int $id)
+    {
+        $data = $this->dbconn->getMediaData($id);
+        if ($data != null) {
+            return new mediaItem($data["id"], $data["name"], $data["type"], $data["path"], $data["desc"], $this->dbconn);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Gets all media-object from the database
+     * @return array Array with all mediaItems
+     */
+    function getAllMedia()
+    {
+        $dataArray = $this->dbconn->getAllMediaData();
+        $objArray = array();
+        foreach ($dataArray as $data) {
+            array_push($objArray, new mediaItem($data["id"], $data["name"], $data["type"], $data["path"], $data["path"], $this->dbconn));
+        }
+        return $objArray;
+    }
 }
