@@ -14,6 +14,7 @@ class ContentItem
     private $published;
     private $static;
     private $showdate;
+    private $dbconn;
 
     /**
      * Init the content-object
@@ -38,7 +39,8 @@ class ContentItem
         int $created,
         bool $published,
         bool $static,
-        bool $showdate
+        bool $showdate,
+        DBConnector $dbconn
     ) {
         $this->id = $id;
         $this->url = $url;
@@ -50,6 +52,7 @@ class ContentItem
         $this->published = $published;
         $this->static = $static;
         $this->showdate = $showdate;
+        $this->dbconn = $dbconn;
     }
     //* Write functions
     /**
@@ -75,7 +78,7 @@ class ContentItem
         bool $static,
         bool $showdate
     ) {
-        updateContentData($this->id, $url, $title, $subtitle, $content, $image, $created, $published, $static, $showdate);
+        $this->dbconn->updateContentData($this->id, $url, $title, $subtitle, $content, $image, $created, $published, $static, $showdate);
         $this->update();
     }
     /**
@@ -83,7 +86,7 @@ class ContentItem
      */
     public function delete()
     {
-        removeContentData($this->id);
+        $this->dbconn->deleteContentData($this->id);
     }
 
     //* read functions
@@ -92,7 +95,7 @@ class ContentItem
      */
     public function update()
     {
-        $data = getContentDataByID($this->id);
+        $data = $this->dbconn->getContentData($this->id);
         $this->url = $data["url"];
         $this->title = $data["title"];
         $this->subtitle = $data["subtitle"];
@@ -144,91 +147,79 @@ class ContentItem
         return $this->showdate;
     }
 }
-/**
- * Get ContentItem by ID
- * @param int $id The ID of the content
- * @return ContentItem returns the ContentItem, null if not existing
- */
-function getContentByID(int $id)
+
+
+class contentManager
 {
-    if (contentExistsByID($id)) {
-        $data = getContentDataByID($id);
-        return new ContentItem(
-            $id,
-            $data["url"],
-            $data["title"],
-            $data["subtitle"],
-            $data["content_html"],
-            $data["image"],
-            $data["created"],
-            $data["published"],
-            $data["static"],
-            $data["showdate"]
-        );
-    } else {
-        return null;
+    private $dbconn;
+    function __construct()
+    {
+        $this->dbconn = new DBConnector();
     }
-}
-/**
- * Get ContentItem by URL
- * @param string $url The URL of the content
- * @return ContentItem returns the ContentItem, null if not existing
- */
-function getContentByURL(string $url)
-{
-    if (contentExistsByURL($url)) {
-        $data = getContentDataByURL($url);
-        return new ContentItem(
-            $data["id"],
-            $data["url"],
-            $data["title"],
-            $data["subtitle"],
-            $data["content_html"],
-            $data["image"],
-            $data["created"],
-            $data["published"],
-            $data["static"],
-            $data["showdate"]
-        );
-    } else {
-        return null;
+
+    /**
+     * Get ContentItem by ID
+     * @param int $id The ID of the content
+     * @return ContentItem returns the ContentItem, null if not existing
+     */
+    public function getContent(int $id)
+    {
+        if ($this->dbconn->contentExists($id)) {
+            $data = $this->dbconn->getContentData($id);
+            return new ContentItem(
+                $id,
+                $data["url"],
+                $data["title"],
+                $data["subtitle"],
+                $data["content_html"],
+                $data["image"],
+                $data["created"],
+                $data["published"],
+                $data["static"],
+                $data["showdate"],
+                $this->dbconn
+            );
+        } else {
+            return null;
+        }
     }
-}
-/**
- * Creates a new content
- * @param string $url URL for the content
- * @param string $title the title
- * @param string $subtitle the subtitle
- * @param string $content HTML-Formatted content
- * @param int $image The mediaID for the image
- * @param int $created timestamp when content was created
- * @param bool $published public
- * @param bool $static content is static page / not
- * @param bool $showDate should the date be shown
- * @return ContentItem Returns the created ContentItem
- */
-function createContent(
-    string $url,
-    string $title,
-    string $subtitle,
-    string $content,
-    int $image,
-    int $created,
-    bool $published,
-    bool $static,
-    bool $showDate
-) {
-    if(addContentData(
-        $url,
-        $title,
-        $subtitle,
-        $content,
-        $image,
-        $created,
-        $published,
-        $static,
-        $showDate
-    )){
-        return getContentByURL($url);
+
+    /**
+     * Creates a new content
+     * @param string $url URL for the content
+     * @param string $title the title
+     * @param string $subtitle the subtitle
+     * @param string $content HTML-Formatted content
+     * @param int $image The mediaID for the image
+     * @param int $created timestamp when content was created
+     * @param bool $published public
+     * @param bool $static content is static page / not
+     * @param bool $showDate should the date be shown
+     * @return ContentItem Returns the created ContentItem
+     */
+    function createContent(
+        string $url,
+        string $title,
+        string $subtitle,
+        string $content,
+        int $image,
+        int $created,
+        bool $published,
+        bool $static,
+        bool $showDate
+    ) {
+        if ($this->dbconn->addContentData(
+            $url,
+            $title,
+            $subtitle,
+            $content,
+            $image,
+            $created,
+            $published,
+            $static,
+            $showDate
+        )) {
+            return $this->getContent($this->dbconn->getContentID($url));
+        }
     }
 }
