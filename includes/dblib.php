@@ -355,7 +355,7 @@ class DBConnector
 	 * @param int $id The ID of the user
 	 * @return bool returns true if user has been deleted
 	 */
-	public function removeUserData(int $id)
+	public function deleteUserData(int $id)
 	{
 		$table = $this->tables["users"];
 		$q = "DELETE FROM `" . $table . "` WHERE `id` = ?";
