@@ -2,13 +2,14 @@
 require_once($_SERVER["DOCUMENT_ROOT"] . "/includes/dblib.php");
 
 class HttpRoute{
-    private int $id;
-    private string $name;
-    private string $url;
-    private int $type;
-    private ?int $z_code;
-    private ?string $z_url;
-    private ?int $o_pgid;
+    private $id;
+    private $name;
+    private $url;
+    private $type;
+    private $z_code;
+    private $z_url;
+    private $o_pgid;
+    private $dbconn;
 
     function __construct(int $id,
     string $name,
@@ -16,12 +17,14 @@ class HttpRoute{
     int $type,
     ?int $z_code,
     ?string $z_url,
-    ?int $o_pgid){
+    ?int $o_pgid,
+    DBConnector $dbconn){
 
         $this->id = $id;
         $this->name = $name;
         $this->url = $url;
         $this->type = $type;
+        $this->dbconn = $dbconn;
 
         if($this->type == 0&&$z_code != null&&$z_url != null){
             $this->z_code = $z_code;
@@ -39,7 +42,7 @@ class HttpRoute{
      * Updates the variables in this class
      */
     private function updateData(){
-        $data = getRouteData($this->id);
+        $data = $this->dbconn->getRouteData($this->id);
         $this->name = $data["name"];
         $this->url = $data["url"];
         $this->type = $data["type"];
@@ -66,7 +69,7 @@ class HttpRoute{
      * @param int $o_pgid The ID of the page to schow (Use only if type=1)
      */
     public function setData(string $name, string $url, int $type, ?int $z_code, ?string $z_url, ?int $o_pgid){
-        updateRouteData($this->id, $name, $url, $type, $z_code, $z_url, $o_pgid);
+        $this->dbconn->updateRouteData($this->id, $name, $url, $type, $z_code, $z_url, $o_pgid);
         $this->updateData();
     }
 
@@ -136,12 +139,54 @@ class HttpRoute{
      * Deletes the route.
      */
     public function delete(){
-        deleteRouteData($this->id);
+        $this->dbconn->deleteRouteData($this->id);
     }
 }
 
 class HttpRouteManager{
-    //* Paused until objective DB-Management
+    private $dbconn;
+    function __construct()
+    {
+        $this->dbconn = new DBConnector;
+    }
+
+    /**
+     * Gets a HttpRoute by ID
+     * @param int $id The ID of the Item
+     * @return HttpRoute the HttpRoute
+     */
+    public function getHttpRoute(int $id){
+        $data = $this->dbconn->getRouteData($id);
+        return new HttpRoute($data["id"], $data["name"], $data["url"], $data["type"], $data["0_code"], $data["0_url"],$data["1_pgid"], $this->dbconn);
+    }
+
+    /**
+     * Gets the ID for a HttpRoute by URL
+     * @param string $url The URL to use
+     * @return int $id The ID for the route 
+     */
+    public function getRouteID(string $url){
+        return $this->dbconn->getRouteID($url);
+    }
+
+    /**
+	 * Creates a new HttpRoute and returns new ID
+	 * @param string $name The display-name in admin-panel
+	 * @param string $url the url to route
+	 * @param int $type the route-type (0 = Redirect, 1 = show page)
+	 * @param int $z_code HTTP-Code to use for redirect, set null if type != 0
+	 * @param string $z_url The URL to redirect to, set null if type != 0
+	 * @param int $o_pgid The Page-ID of the page to show, set null if type != 1
+     * @return int The ID of the new HttpRoute
+	 */
+    public function createHttpRoute(string $name, string $url, int $type, ?int $z_code, ?string $z_url, ?int $o_pgid){
+        $this->dbconn->addRouteData($name, $url, $type, $z_code, $z_url, $o_pgid);
+        return $this->dbconn->getRouteID($url);
+    }
+
+    public function deleteHttpRoute(int $id){
+        $this->dbconn->deleteRouteData($id);
+    }
 }
 
 /**
